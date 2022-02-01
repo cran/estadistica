@@ -2,6 +2,11 @@
 #'
 #' @description Realiza el contraste de hipótesis sobre la razón de dos varianzas poblacionales.
 #'
+#' Lee el código QR para video-tutorial sobre el uso de la función con un ejemplo.
+#'
+#' \if{html}{\figure{qrcrazonvarianzas.png}{options: width="25\%" alt="Figure: qricvarianza.png"}}
+#' \if{latex}{\figure{qrcrazonvarianzas.png}{options: width=3cm}}
+#'
 #' @usage contraste.razon.varianzas(x,
 #'                  variable = NULL,
 #'                  introducir = FALSE,
@@ -30,33 +35,29 @@
 #' \strong{Rosario Martínez Verdú}.
 #' \emph{Economía Aplicada.}
 #'
-#' \strong{Cristina Pardo-García}.
-#' \emph{Métodos Cuantitativos para la Medición de la Cultura (MC2). Economía Aplicada.}
-#'
 #' Facultad de Economía. Universidad de Valencia (España)
 #'
 #' @details
 #'
-#' La hipótesis nula que se considera en este contraste es:
+#' La hipótesis nula que se considera en el contraste bilateral es:
 #'
-#' \if{html}{\figure{contrastecocientevar.png}{options: width="30\%" alt="Figure: contrastecocientevar.png"}}
-#' \if{latex}{\figure{contrastecocientevar.png}{options: scale=.3}}
+#' \if{html}{\figure{crazonvar.png}{options: width="30\%" alt="Figure: contrastecocientevar.png"}}
+#' \if{latex}{\figure{crazonvar.png}{options: width=3cm}}
 #'
 #' El estadístico F es:
 #'
 #' (1) Si trabajamos con la varianza muestral:
 #'
 #'
-#' \if{html}{\figure{contrastecocientevarmuestra.png}{options: width="50\%" alt="Figure: contrastecocientevarmuestra.png"}}
-#' \if{latex}{\figure{contrastecocientevarmuestra.png}{options: scale=.5}}
+#' \if{html}{\figure{crazonvarmuestra.png}{options: width="50\%" alt="Figure: contrastecocientevarmuestra.png"}}
+#' \if{latex}{\figure{crazonvarmuestra.png}{options: width=5cm}}
 #'
 #' (2) si trabajamos con la cuasi-varianza muestral:
 #'
+#' \if{html}{\figure{crazonvarcuasi.png}{options: width="25\%" alt="Figure: contrastecocientevarcuasi.png"}}
+#' \if{latex}{\figure{crazonvarcuasi.png}{options: width=3cm}}
 #'
-#' \if{html}{\figure{contrastecocientevarcuasi.png}{options: width="25\%" alt="Figure: contrastecocientevarcuasi.png"}}
-#' \if{latex}{\figure{contrastecocientevarcuasi.png}{options: scale=.25}}
-#'
-#' Nota: en ambos casos el estadístico F se distribuye con una F con (n2-1) grados de libertad en el numerador y (n1-1) en el denominador.
+#' Tanto en (1) como en (2) el estadístico F se distribuye como una F con (n1-1) grados de libertad en el numerador y (n2-1) grados de libertad en el denominador.
 #'
 #' @seealso \code{\link{ic.razon.varianzas}}
 #'
@@ -110,7 +111,7 @@ if(isFALSE(introducir)) {
       x <- x
     } else{
       warning("Para calcular este tipo de contraste hay que seleccionar 2 variables")
-      stop("El conjunto de datos seleccionado no tiene la dimension adecuada")
+      stop("El conjunto de datos seleccionado no tiene la dimensi\u00f3n adecuada")
     }
   } else{
 
@@ -119,14 +120,14 @@ if(isFALSE(introducir)) {
           if(all(variable <= length(x))){
             variable <- variable
           } else{
-            stop("Seleccion erronea de variable")
+            stop("Selecci\u00f3n err\u00f3nea de variables")
           }
         }
       if(is.character(variable)){
         if(all(variable %in% varnames)){
           variable = match(variable,varnames)
           } else {
-            stop("El nombre de la variable no es valido")
+            stop("El nombre de la variable no es v\u00e1lido")
           }
         }
 
@@ -135,7 +136,7 @@ if(isFALSE(introducir)) {
 
       } else{
         warning("Para calcular el contraste de la raz\u00f3n de varianzas hay que seleccionar dos variables")
-        stop("El conjunto de datos seleccionado parece ser no valido")
+        stop("El conjunto de datos seleccionado parece ser no v\u00e1lido")
       }
   }
 
@@ -166,7 +167,7 @@ if(isFALSE(introducir)) {
 
 } else{   # aqu\u00ed empieza introducir datos
 
-  print("A continuacion, vas a introducir los datos de las muestras.")
+  print("A continuaci\u00f3n, vas a introducir los datos de las muestras.")
 
   n1 <- readline(prompt = "Introducir el tama\u00f1o de la muestra 1: ")
   n1 <- as.numeric(n1)
@@ -200,19 +201,19 @@ if(alfa >= 0 & alfa <=1){
 
   if(tipo_contraste == "bilateral"){
 
-    valor_critico1 <- round(qf(alfa/2, df1= n1-1, df2 = n2-1,lower.tail = T),4)
-    valor_critico2 <- round(qf(alfa/2, df1= n1-1, df2 = n2-1,lower.tail = F),4)
+    valor_critico1 <- round(qf(alfa/2, df1= n2-1, df2 = n1-1,lower.tail = T),4)
+    valor_critico2 <- round(qf(alfa/2, df1= n2-1, df2 = n1-1,lower.tail = F),4)
 
   }
 
   if(tipo_contraste == "cola izquierda"){
 
-    valor_critico <- round(qf(alfa, df1= n1-1, df2 = n2-1,lower.tail = T),4)
+    valor_critico <- round(qf(alfa, df1= n2-1, df2 = n1-1,lower.tail = T),4)
   }
 
   if(tipo_contraste == "cola derecha"){
 
-    valor_critico <- round(qf(alfa, df1= n1-1, df2 = n2-1,lower.tail = F),4)
+    valor_critico <- round(qf(alfa, df1= n2-1, df2 = n1-1,lower.tail = F),4)
   }
 
 } else{
@@ -230,14 +231,14 @@ if(alfa >= 0 & alfa <=1){
 if(var_muestra == 1){
 
   # caso 1.1
-  estadistico.prueba <- (n1/(n1-1))*((n2-1)/n2)*(var_mu1/var_mu2)
+  estadistico.prueba <- (n1/(n1-1))*((n2-1)/n2)*(var_mu1/var_mu2)*(1/hipotesis_nula)
 
 } else {
 
   # caso 1.2
   print("Este es el intervalo de confianza que generalmente calculan los softwares")
 
-  estadistico.prueba <- var_mu1 / var_mu2
+  estadistico.prueba <- (var_mu1 / var_mu2) * (1/hipotesis_nula)
 
 }
 
@@ -248,7 +249,7 @@ data$y <-df(data$x, df1= n1-1, df2 = n2-1)
 
 if(tipo_contraste == "bilateral"){
 
-  pvalor <- 2 * min(pf(estadistico.prueba, df1= n1-1, df2 = n2-1,lower.tail = F), pf(estadistico.prueba, df1= n2-1, df2 = n1-1,lower.tail = T))
+  pvalor <- 2 * min(pf(estadistico.prueba, df1= n1-1, df2 = n2-1,lower.tail = F), pf(estadistico.prueba, df1= n1-1, df2 = n2-1,lower.tail = T))
 
   if(estadistico.prueba >= valor_critico1 & estadistico.prueba <=  valor_critico2){
 

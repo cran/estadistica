@@ -1,6 +1,12 @@
 #' @title Tabla doble entrada.
 #'
 #' @description Calcula la tabla de frecuencias bidimensionales.
+#'
+#' Lee el código QR para video-tutorial sobre el uso de la función con un ejemplo.
+#'
+#' \if{html}{\figure{qrtablabidimensional.png}{options: width="25\%" alt="Figure: qricvarianza.png"}}
+#' \if{latex}{\figure{qrtablabidimensional.png}{options: width=3cm}}
+#'
 #' @usage tabla.bidimensional(x,
 #'              distribucion = c("cruzada","condicionada"),
 #'              frecuencias = c("absolutas","relativas"),
@@ -159,7 +165,7 @@ tabla.bidimensional <- function(x,
     filename <- paste("Tabla cruzada de ", variable[1]," y ", variable[2], " (", Sys.time(), ").xlsx", sep = "")
     filename <- gsub(" ", "_", filename)
     filename <- gsub(":", ".", filename)
-    rio::export(tabla, row.names = TRUE, file = filename)
+    rio::export(tabla, rowNames = TRUE, file = filename)
   }
 
   return(tabla)

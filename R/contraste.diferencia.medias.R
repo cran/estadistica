@@ -2,6 +2,11 @@
 #'
 #' @description Realiza el contraste de hipótesis sobre la diferencia de medias poblacionales.
 #'
+#' Lee el código QR para video-tutorial sobre el uso de la función con un ejemplo.
+#'
+#' \if{html}{\figure{qrcdifmedias.png}{options: width="25\%" alt="Figure: qricvarianza.png"}}
+#' \if{latex}{\figure{qrcdifmedias.png}{options: width=3cm}}
+#'
 #' @usage contraste.diferencia.medias(x,
 #'                  variable = NULL,
 #'                  introducir = FALSE,

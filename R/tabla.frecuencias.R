@@ -1,6 +1,12 @@
 #' @title Tabla de frecuencias.
 #'
 #' @description Esta función presenta la distribución de frecuencias de una variable.
+#'
+#' Lee el código QR para video-tutorial sobre el uso de la función con un ejemplo.
+#'
+#' \if{html}{\figure{qrtablafrecuencias.png}{options: width="25\%" alt="Figure: qricvarianza.png"}}
+#' \if{latex}{\figure{qrtablafrecuencias.png}{options: width=3cm}}
+#'
 #' @usage tabla.frecuencias(x,
 #'                          eliminar.na = TRUE,
 #'                          grafico = FALSE,
@@ -59,7 +65,7 @@ tabla.frecuencias <- function(x,
     if(variable %in% varnames){
       variable = which(varnames == variable)
     } else {
-      stop("El nombre de la variable no es valido")
+      stop("El nombre de la variable no es v\u00e1lido")
     }
   }
 
@@ -81,6 +87,8 @@ tabla.frecuencias <- function(x,
   }
 
   valores_distintos <- nrow(unique(x))
+  valores_ordenados <- unique(x)
+  valores_ordenados <- valores_ordenados[,1]
 
   if(valores_distintos > 20){
 
@@ -111,8 +119,20 @@ tabla.frecuencias <- function(x,
       x <- x[2]
       names(x) <- y
 
+    } else{
+
+      print("Has decidido no agrupar los valores, puede que el diagrama de barras no represente adecuadamente la distribuci\u00f3n de la variable")
+
+      agrupar = 0
+
     }
 
+
+  } else{
+
+    print("Has decidido no agrupar los valores.")
+
+    agrupar = 0
 
     }
 
@@ -193,33 +213,87 @@ tabla.frecuencias <- function(x,
         labs(title = paste("Histograma de ",variables[1],sep=""),
                x = variables[1],
                y = "") +
-        tema_blanco
+        theme(
+          panel.background = element_rect(fill = "transparent"), # bg of the panel
+          plot.background = element_rect(fill = "transparent", color = NA), # bg of the plot
+          panel.grid.major = element_blank(), # get rid of major grid
+          panel.grid.minor = element_blank(), # get rid of minor grid
+          legend.background = element_blank(), # get rid of legend bg
+          legend.box.background = element_blank(), # get rid of legend panel bg
+          legend.key = element_blank(), # get rid of key legend fill, and of the surrounding
+          axis.ticks.x=element_blank(),
+          axis.line.y = element_blank(),
+          axis.ticks.y=element_blank(),
+          axis.text.x=element_text(size=6,angle=45),
+          axis.text.y=element_blank(),
+          legend.title = element_blank()
+        )
 
 
     } else {
 
-      print("El diagrama de barras puede ser una buena representaci\u00f3n gr\u00e1fica si la variable no presenta muchos distintos valores (aconsejable como m\u00e1ximo 10-15)")
-
       variables <- names(df)
 
       if(valores_distintos > 10){
-        anchura = NULL
+
+        print("El diagrama de barras puede no ser una buena representaci\u00f3n gr\u00e1fica si la variable presenta muchos distintos valores (aconsejable como m\u00e1ximo 10-15)")
+
+
+        plot <- ggplot(df, aes_string(x=as.factor(round(df[,1],2)),y=variables[2])) +
+          geom_bar(stat = "identity",  fill = "orange") +
+          geom_text(aes_string(label=variables[2]), vjust=1.5, size = 2.5) +
+          geom_text(aes(label=paste("(",round(df[,3]*100,2),"%)",sep="")), vjust=2.65, size = 2.5, color = "blue" ) +
+          labs(title = paste("Diagrama de barras de ", variables[1], sep=""),
+               x = variables[1],
+               y = "") +
+          theme(
+            panel.background = element_rect(fill = "transparent"), # bg of the panel
+            plot.background = element_rect(fill = "transparent", color = NA), # bg of the plot
+            panel.grid.major = element_blank(), # get rid of major grid
+            panel.grid.minor = element_blank(), # get rid of minor grid
+            legend.background = element_blank(), # get rid of legend bg
+            legend.box.background = element_blank(), # get rid of legend panel bg
+            legend.key = element_blank(), # get rid of key legend fill, and of the surrounding
+            axis.ticks.x=element_blank(),
+            axis.line.y = element_blank(),
+            axis.ticks.y=element_blank(),
+            axis.text.x=element_text(size=6,angle=90),
+            axis.text.y=element_blank(),
+            legend.title = element_blank()
+          )
+
+
       } else {
-        anchura = 0.5
+
+        plot <- ggplot(df, aes_string(x=variables[1],y=variables[2])) +
+          geom_bar(stat = "identity", width = 0.5, fill = "orange") +
+          geom_text(aes_string(label=variables[2]), vjust=1.5, size = 2.5) +
+          geom_text(aes(label=paste("(",round(df[,3]*100,2),"%)",sep="")), vjust=2.65, size = 2.5, color = "blue" ) +
+          labs(title = paste("Diagrama de barras de ", variables[1], sep=""),
+               x = variables[1],
+               y = "") +
+          scale_x_continuous(breaks = valores_ordenados) +
+          theme(
+            panel.background = element_rect(fill = "transparent"), # bg of the panel
+            plot.background = element_rect(fill = "transparent", color = NA), # bg of the plot
+            panel.grid.major = element_blank(), # get rid of major grid
+            panel.grid.minor = element_blank(), # get rid of minor grid
+            legend.background = element_blank(), # get rid of legend bg
+            legend.box.background = element_blank(), # get rid of legend panel bg
+            legend.key = element_blank(), # get rid of key legend fill, and of the surrounding
+            axis.ticks.x=element_blank(),
+            axis.line.y = element_blank(),
+            axis.ticks.y=element_blank(),
+            axis.text.y=element_blank(),
+            legend.title = element_blank()
+          )
       }
 
-      plot <- ggplot(df, aes_string(x=variables[1],y=variables[2])) +
-        geom_bar( stat = "identity", width = anchura, fill = "orange") +
-        geom_text(aes_string(label=variables[2]), vjust=1.5, size = 2.5) +
-        geom_text(aes(label=paste("(",round(df[,3]*100,2),"%)",sep="")), vjust=2.65, size = 2.5, color = "darkgreen" ) +
-        labs(title = paste("Diagrama de barras de ", variables[1], sep=""),
-             x = variables[1],
-             y = "") +
-        tema_blanco
+
 
     }
 
-  }
+  } # cierra grafico
 
   if(grafico){
 

@@ -1,6 +1,12 @@
 #' @title Moda.
 #'
 #' @description Calcula la moda.
+#'
+#' Lee el código QR para video-tutorial sobre el uso de la función con un ejemplo.
+#'
+#' \if{html}{\figure{qrposicion.png}{options: width="25\%" alt="Figure: qricvarianza.png"}}
+#' \if{latex}{\figure{qrposicion.png}{options: width=3cm}}
+#'
 #' @usage moda(x, variable = NULL, pesos = NULL)
 #'
 #' @param x Conjunto de datos. Puede ser un vector o un dataframe.

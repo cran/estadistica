@@ -2,6 +2,11 @@
 #'
 #' @description Realiza el contraste de hipótesis sobre la proporción poblacional.
 #'
+#' Lee el código QR para video-tutorial sobre el uso de la función con un ejemplo.
+#'
+#' \if{html}{\figure{qrcproporcion.png}{options: width="25\%" alt="Figure: qricvarianza.png"}}
+#' \if{latex}{\figure{qrcproporcion.png}{options: width=3cm}}
+#'
 #' @usage contraste.proporcion(x,
 #'                  variable = NULL,
 #'                  introducir = FALSE,
@@ -40,7 +45,7 @@
 #' En este caso el estadístico Z del contraste es:
 #'
 #' \if{html}{\figure{cproporcion.png}{options: width="40\%" alt="Figure: cproporcion.png"}}
-#' \if{latex}{\figure{cproporcion.png}{options: scale=.4}}
+#' \if{latex}{\figure{cproporcion.png}{options: width=4cm}}
 #'
 #' @seealso \code{\link{ic.proporcion}}
 #'

@@ -1,6 +1,12 @@
 #' @title Momento central.
 #'
 #' @description Calcula los momentos centrales respecto de la media.
+#'
+#' Lee el código QR para video-tutorial sobre el uso de la función con un ejemplo.
+#'
+#' \if{html}{\figure{qrforma.png}{options: width="25\%" alt="Figure: qricvarianza.png"}}
+#' \if{latex}{\figure{qrforma.png}{options: width=3cm}}
+#'
 #' @usage momento.central(x, orden)
 #'
 #' @param x Conjunto de datos. Puede ser un vector o un dataframe.
@@ -54,7 +60,7 @@ momento.central <- function(x, orden){
   }
 
 
-  momento <- x %>%
+  momento <- x %>% na.omit %>%
     mutate(media_x = media(x),
            momento = (x-media_x)^orden) %>%
     summarize(momento = sum(momento)/n()) %>%

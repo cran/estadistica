@@ -1,6 +1,12 @@
 #' @title Resumen descriptivos.
 #'
 #' @description Calcula un resumen de los principales estadísticos descriptivos.
+#'
+#' Lee el código QR para video-tutorial sobre el uso de la función con un ejemplo.
+#'
+#' \if{html}{\figure{qrdescriptivos.png}{options: width="25\%" alt="Figure: qricvarianza.png"}}
+#' \if{latex}{\figure{qrdescriptivos.png}{options: width=3cm}}
+#'
 #' @usage resumen.descriptivos(x,
 #'                             variable = NULL,
 #'                             pesos = NULL,
@@ -51,7 +57,10 @@ resumen.descriptivos <- function(x, variable = NULL, pesos = NULL, exportar = FA
 
   if(is.null(variable)){
 
-    x <- x
+    varcuan <-  names(x[,unlist(lapply(x, is.numeric))])
+    seleccion = match(varcuan,varnames)
+    x <- x[seleccion]
+    varnames <- varcuan
 
   } else{
 
@@ -169,13 +178,13 @@ resumen.descriptivos <- function(x, variable = NULL, pesos = NULL, exportar = FA
   num_modas <-nrow(valor_moda)
 
   row.names(resumen) <- c("media","m\u00ednimo","cuartil 1","mediana","cuartil 3", "m\u00e1ximo","varianza","desviaci\u00f3n t\u00edpica",
-                          "coef.variaci\u00f3n","RIC","asimetr\u00eda","curtosis",paste("moda ",seq(1:num_modas),sep=""))
+                          "coef.variaci\u00f3n","RIC","asimetr\u00eda","curtosis","moda")
 
   if (exportar) {
     filename <- paste("Resumen descriptivos basicos"," (", Sys.time(), ").xlsx", sep = "")
     filename <- gsub(" ", "_", filename)
     filename <- gsub(":", ".", filename)
-    rio::export(resumen, row.names = TRUE, file = filename)
+    rio::export(resumen, rowNames = TRUE, file = filename)
   }
 
   return(resumen)

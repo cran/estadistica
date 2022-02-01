@@ -23,6 +23,11 @@ Devuelve la tabla de frecuencias como una \code{tibble}. Si \code{grafico = TRUE
 }
 \description{
 Esta función presenta la distribución de frecuencias de una variable.
+
+Lee el código QR para video-tutorial sobre el uso de la función con un ejemplo.
+
+\if{html}{\figure{qrtablafrecuencias.png}{options: width="25\%" alt="Figure: qricvarianza.png"}}
+\if{latex}{\figure{qrtablafrecuencias.png}{options: width=3cm}}
 }
 \references{
 Esteban García, J. y otros. (2005). Estadística descriptiva y nociones de probabilidad. Paraninfo. ISBN: 9788497323741

@@ -23,6 +23,11 @@ Devuelve la tabla cruzada de las dos variables seleccionadas en un \code{data.fr
 }
 \description{
 Calcula la tabla de frecuencias bidimensionales.
+
+Lee el código QR para video-tutorial sobre el uso de la función con un ejemplo.
+
+\if{html}{\figure{qrtablabidimensional.png}{options: width="25\%" alt="Figure: qricvarianza.png"}}
+\if{latex}{\figure{qrtablabidimensional.png}{options: width=3cm}}
 }
 \references{
 Esteban García, J. y otros. (2005). Estadística descriptiva y nociones de probabilidad. Paraninfo. ISBN: 9788497323741

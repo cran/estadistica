@@ -1,6 +1,12 @@
 #' @title Cuantiles.
 #'
 #' @description Calcula los cuantiles.
+#'
+#' Lee el código QR para video-tutorial sobre el uso de la función con un ejemplo.
+#'
+#' \if{html}{\figure{qrcuantiles.png}{options: width="25\%" alt="Figure: qricvarianza.png"}}
+#' \if{latex}{\figure{qrcuantiles.png}{options: width=3cm}}
+#'
 #' @usage cuantiles(x,
 #'                  variable = NULL,
 #'                  pesos = NULL,
@@ -65,7 +71,10 @@ cuantiles <- function(x, variable = NULL, pesos = NULL,
 
   if(is.null(variable)){
 
-    x <- x
+    varcuan <-  names(x[unlist(lapply(x, is.numeric))])
+    seleccion = match(varcuan,varnames)
+    x <- x[seleccion]
+    varnames <- varcuan
 
   } else{
 
@@ -160,7 +169,7 @@ cuantiles <- function(x, variable = NULL, pesos = NULL,
     filename <- paste("Cuantiles"," (", Sys.time(), ").xlsx", sep = "")
     filename <- gsub(" ", "_", filename)
     filename <- gsub(":", ".", filename)
-    rio::export(cuantiles, row.names = TRUE, file = filename)
+    rio::export(cuantiles, rowNames = TRUE, file = filename)
   }
 
   return(cuantiles)

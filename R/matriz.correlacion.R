@@ -1,6 +1,12 @@
 #' @title Matriz de correlación.
 #'
 #' @description Obtiene la matriz de correlación (de Pearson) entre 2 o más variables cuantitativas.
+#'
+#' Lee el código QR para video-tutorial sobre el uso de la función con un ejemplo.
+#'
+#' \if{html}{\figure{qrcorrelacion.png}{options: width="25\%" alt="Figure: qricvarianza.png"}}
+#' \if{latex}{\figure{qrcorrelacion.png}{options: width=3cm}}
+#'
 #' @usage matriz.correlacion(x, variable = NULL, exportar = FALSE)
 #'
 #' @param x Conjunto de datos. Es un dataframe con al menos 2 variables (2 columnas).
@@ -26,13 +32,13 @@
 #' Se obtiene la matriz de correlación muestral:
 #'
 #' \if{html}{\figure{matrizcorrelacion.png}{options: width="50\%" alt="Figure: matrizcorrelacion.png"}}
-#' \if{latex}{\figure{matrizcorrelacion.png}{options: scale=.5}}
+#' \if{latex}{\figure{matrizcorrelacion.png}{options: width=8cm}}
 #'
 #' @note
 #' Si en lugar del tamaño muestral (n) se utiliza el tamaño de la población (N) se obtiene la matriz de correlació poblacional:
 #'
 #' \if{html}{\figure{matrizcorrelacionpob.png}{options: width="55\%" alt="Figure: matrizcorrelacionpob.png"}}
-#' \if{latex}{\figure{matrizcorrelacionpob.png}{options: scale=.55}}
+#' \if{latex}{\figure{matrizcorrelacionpob.png}{options: width=8cm}}
 #'
 #' @seealso \code{\link{correlacion}}, \code{\link{covarianza}},\code{\link{matriz.covar}}
 #'
@@ -54,10 +60,15 @@
 #' @export
 matriz.correlacion <- function(x, variable = NULL, exportar = FALSE){
 
+  x <- data.frame(x)
+  varnames <- names(x)
+
   if(is.null(variable)){
 
-    x <- data.frame(x)
-    varnames <- names(x)
+    varcuan <-  names(x[unlist(lapply(x, is.numeric))])
+    seleccion = match(varcuan,varnames)
+    x <- x[seleccion]
+    varnames <- varcuan
 
   } else{
 
@@ -69,7 +80,7 @@ matriz.correlacion <- function(x, variable = NULL, exportar = FALSE){
 
       } else{
 
-        stop("Seleccion errronea de variables")
+        stop("Selecci\u00f3n err\u00f3nea de variables")
 
       }
     }
@@ -79,7 +90,7 @@ matriz.correlacion <- function(x, variable = NULL, exportar = FALSE){
       if(all(variable %in% varnames)){
         variable = match(variable,varnames)
       } else {
-        stop("El nombre de la variable no es valido")
+        stop("El nombre de la variable no es v\u00e1lido")
       }
     }
 
@@ -91,7 +102,7 @@ matriz.correlacion <- function(x, variable = NULL, exportar = FALSE){
   clase <- sapply(x, class)
 
   if (!all(clase %in% c("numeric","integer"))) {
-    stop("No puede calcularse la varianza, alguna variable que has seleccionado no es cuantitativa")
+    stop("No puede calcularse la matriz de correlaci\u00f3, alguna variable que has seleccionado no es cuantitativa")
   }
 
 
@@ -104,7 +115,7 @@ matriz.correlacion <- function(x, variable = NULL, exportar = FALSE){
     filename <- paste("Matriz de correlaci\u00f3n"," (", Sys.time(), ").xlsx", sep = "")
     filename <- gsub(" ", "_", filename)
     filename <- gsub(":", ".", filename)
-    rio::export(matriz_cor, row.names = TRUE, file = filename)
+    rio::export(matriz_cor, rowNames = TRUE, file = filename)
   }
 
   return(matriz_cor)

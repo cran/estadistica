@@ -7,7 +7,7 @@
 #'   \item{ID}{Identificador del encuestado.}
 #'   \item{CODIGO.REGION}{1=NOROESTE,2=NORESTE,3=COMUNIDAD MADRID,4=CENTRO,5=ESTE,6=SUR,7=CANARIAS}
 #'   \item{SEXO}{Sexo (1=hombre, 6=mujer)}
-#'   \item{ESTUDIOS}{Nivel de estudios. 1=Menos que primaria,2=Primaria,3=Primera etapa secundaria,3=Segunda etapa secundaria,4=FP superior o similar,5=Diplomado o similar,6=Licenciados o similares y doctores}
+#'   \item{ESTUDIOS}{Nivel de estudios. 1=Menos que primaria,2=Primaria,3=Primera etapa secundaria,4=Segunda etapa secundaria,5=FP superior o similar,6=Diplomado o similar,7=Licenciados o similares y doctores}
 #'   \item{TIPO.JORNADA}{Tipo de jornada laboral. 1=Tiempo completo,2=Tiempo parcial}
 #'   \item{TIPO.CONTRATO}{Tipo de contrato laboral. 1=Indefinido,2=Duración determinada}
 #'   \item{SALARIO.BRUTO.ANUAL}{Salario bruto anual}
@@ -130,56 +130,55 @@
 #'
 "diseno2"
 
-#' Datos simulados sobre características físicas de bebés.
-#' @usage data("crecimiento")
-#' @format Dataframe con 4800 observaciones de 7 variables.
+#' Data: Turistas internacionales Comunidad Valenciana
+#'
+#' @usage data("turistas")
+#' @format Dataframe con 80 observaciones de 2 variables.
 #' \describe{
-#'   \item{Id.bebe}{identificador del bebé}
-#'   \item{edad}{edad del bebé, en meses}
-#'   \item{sexo}{sexo del bebé}
-#'   \item{estatura}{estatura del bebé, en centímetros}
-#'   \item{peso}{peso del bebé, en kilogramos}
-#'   \item{perimetro.craneal}{perímetro del cráneo del bebé, en centímetros}
-#'   \item{IMC}{índice de masa corporal, en kg/m2. Es la relación entre el peso (en kg) y la longitud (estatura) en posición recostada (en m2)}
+#'   \item{perido}{Periodo temporal.}
+#'   \item{Turistas.internacionales}{Número de turistas con destino principal la Comunidad Valenciana}
 #' }
-#' @source Muestra simulada.
+#' @source Movimientos turísticos en fronteras. Frontur. Instituto de Estudios Turísticos (hasta septiembre de 2015) e INE (a partir de octubre de 2015)
 #'
-#' @author
-#' \strong{Vicente Coll-Serrano} (\email{vicente.coll@@uv.es}).
-#' \emph{Quantitative Methods for Measuring Culture (MC2). Applied Economics.}
-#'
-#' \strong{Rosario Martínez Verdú} (\email{rosario.martinez@@uv.es}).
-#' \emph{Economía Aplicada.}
-#'
-#' \strong{Cristina Pardo García} (\email{cristina.pardo-garcia@@uv.es}).
-#' \emph{Métodos Cuantitativos para la Medición de la Cultura (MC2). Economía Aplicada.}
-#'
-#' Universidad de Valencia (España)
-#'
-"crecimiento"
+"turistas2"
 
-#' Datos simulados del rendimiento de dos acciones.
-#' @usage data("rendimientos")
-#' @format Dataframe con 3000 observaciones de 3 variables.
+#' Data: Turistas por paises (WTO)
+#'
+#' Datos de World Tourism Organization.
+#' @usage data("turistas")
+#' @format Dataframe con 130 observaciones de 3 variables.
 #' \describe{
-#'   \item{Dia}{dia}
-#'   \item{X}{rendimiento mensual de la acción X, en euros}
-#'   \item{Y}{rendimiento mensual de la acción Y, en euros}
+#'   \item{País}{País de destino.}
+#'   \item{Llegadas.de.turistas}{Número de llegada de turistas en 2017, en miles.}
+#'   \item{Gasto.viajes}{Gasto en viajes en 2017, en millones de USD.}
 #' }
-#' @source Muestra simulada.
+#' @source World Tourism Organization (2019).
 #'
-#' @author
-#' \strong{Vicente Coll-Serrano} (\email{vicente.coll@@uv.es}).
-#' \emph{Quantitative Methods for Measuring Culture (MC2). Applied Economics.}
-#'
-#' \strong{Rosario Martínez Verdú} (\email{rosario.martinez@@uv.es}).
-#' \emph{Economía Aplicada.}
-#'
-#' \strong{Cristina Pardo García} (\email{cristina.pardo-garcia@@uv.es}).
-#' \emph{Métodos Cuantitativos para la Medición de la Cultura (MC2). Economía Aplicada.}
-#'
-#' Universidad de Valencia (España)
-#'
-"rendimientos"
+"turistas"
 
+#' Data: Hogares
+#'
+#' Datos de 10 hogares que se utilizan en los ejemplos de (1) tabla bidimensional, (2) covarianza, (3) matriz de covarianzas, (4) correlación y (5) matriz de correlación.
+#' @usage data("hogares")
+#' @format Dataframe con 10 observaciones de 3 variables.
+#' \describe{
+#'   \item{Hogares}{Identificación del hogar.}
+#'   \item{ingresos}{Ingresos del hogar}
+#'   \item{viajes}{Número de hogares realizado por los hogares.}
+#' }
+#'
+"hogares"
 
+#' Data: Viajes vendidos
+#'
+#' Datos de 5 observaciones que se utilizan en los ejemplos de (1) media, mediana y moda, (2) cuantiles, (3) varianza, desviación típica y coeficiente de variación, (4) medidas de forma y momento central y (5) resumen de descriptivos
+#'
+#' @usage data("viajes_vendidos")
+#' @format Dataframe con 5 observaciones de 3 variables.
+#' \describe{
+#'   \item{Número.de.viajes.vendidos}{Número de viajes perdidos.}
+#'   \item{Empleados}{Número de empleados}
+#'   \item{Ni}{Frecuencia absoluta acumulada del número de empleados}
+#' }
+#'
+"viajes_vendidos"

@@ -18,23 +18,28 @@ Si \code{pesos = NULL}, devuelve la media (aritmética) de todas la variables se
 }
 \description{
 Calcula la media aritmética.
+
+Lee el código QR para video-tutorial sobre el uso de la función con un ejemplo.
+
+\if{html}{\figure{qrposicion.png}{options: width="25\%" alt="Figure: qricvarianza.png"}}
+\if{latex}{\figure{qrposicion.png}{options: width=3cm}}
 }
 \details{
 Si se obtiene la media (muestral) a partir de los datos brutos, como generalmente hacen los softwares:
 
 \if{html}{\figure{media.png}{options: width="80" alt="Figure: media.png"}}
-\if{latex}{\figure{media.png}{options: scale=.8}}
+\if{latex}{\figure{media.png}{options: width=3.5cm}}
 
 Si se desea obtener la media (muestral) a partir de una tabla estadística se utiliza la expresión:
 
 \if{html}{\figure{media2.png}{options: width="80" alt="Figure: media2.png"}}
-\if{latex}{\figure{media2.png}{options: scale=.8}}
+\if{latex}{\figure{media2.png}{options: width=3.5cm}}
 }
 \note{
 Si en lugar del tamaño muestral (n) se utiliza el tamaño de la población (N) se obtiene la media poblacional:
 
 \if{html}{\figure{mediapob.png}{options: width="80" alt="Figure: mediapob.png"}}
-\if{latex}{\figure{mediapob.png}{options: scale=.8}}
+\if{latex}{\figure{mediapob.png}{options: width=3cm}}
 }
 \examples{
 

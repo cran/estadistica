@@ -2,6 +2,11 @@
 #'
 #' @description Realiza el contraste de hipótesis sobre la varianza poblacional.
 #'
+#' Lee el código QR para video-tutorial sobre el uso de la función con un ejemplo.
+#'
+#' \if{html}{\figure{qrcvarianza.png}{options: width="25\%" alt="Figure: qricvarianza.png"}}
+#' \if{latex}{\figure{qrcvarianza.png}{options: width=3cm}}
+#'
 #' @usage contraste.varianza(x,
 #'                  variable = NULL,
 #'                  introducir = FALSE,
@@ -39,26 +44,26 @@
 #'
 #' @details
 #'
-#' (1) Si la media poblacional es conocida, el estadístico chi-dos es:
+#' (1) Si la media poblacional es desconocida, el estadístico chi-dos es:
 #'
 #' (1.1) utilizando la varianza muestral:
 #'
-#' \if{html}{\figure{cvarmuestra.png}{options: width="30\%" alt="Figure: cvarmuestra.png"}}
-#' \if{latex}{\figure{cvarmuestra.png}{options: scale=.3}}
+#' \if{html}{\figure{cvarmuestra.png}{options: width="25\%" alt="Figure: cvarmuestra.png"}}
+#' \if{latex}{\figure{cvarmuestra.png}{options: width=3cm}}
 #'
 #' (1.2) utilizando la cuasi-varianza muestral:
 #'
 #' \if{html}{\figure{cvarcuasi.png}{options: width="30\%" alt="Figure: cvarcuasi.png"}}
-#' \if{latex}{\figure{cvarcuasi.png}{options: scale=.3}}
-
+#' \if{latex}{\figure{cvarcuasi.png}{options: width=4cm}}
+#'
 #' (2) Si la media poblacional es conocida.
 #'
 #' (2.1) utilizando la varianza muestral:
 #'
 #' \if{html}{\figure{cvarmediaconmuestra.png}{options: width="60\%" alt="Figure: cvarmediaconmuestra.png"}}
-#' \if{latex}{\figure{cvarmediaconmuestra.png}{options: scale=.6}}
+#' \if{latex}{\figure{cvarmediaconmuestra.png}{options: width=5cm}}
 #'
-#'  Nota: En todos los casos el estadístico chi-dos se distrubuye con n-1 grados de libertad.
+#'  Nota: En todos los casos, el estadístico chi-dos se distrubuye con n-1 grados de libertad.
 #'
 #' @seealso \code{\link{ic.varianza}}
 #'

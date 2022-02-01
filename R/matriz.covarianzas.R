@@ -1,6 +1,12 @@
 #' @title Matriz de varianzas y covarianzas.
 #'
 #' @description Obtiene la matriz de varianzas y covarianzas.
+#'
+#' Lee el código QR para video-tutorial sobre el uso de la función con un ejemplo.
+#'
+#' \if{html}{\figure{qrcovarianza.png}{options: width="25\%" alt="Figure: qricvarianza.png"}}
+#' \if{latex}{\figure{qrcovarianza.png}{options: width=3cm}}
+#'
 #' @usage matriz.covar(x,
 #'               variable = NULL,
 #'               tipo = c("muestral","cuasi"),
@@ -30,12 +36,12 @@
 #' (1) Se obtiene la matriz de varianzas y covarianzas muestrales:
 #'
 #' \if{html}{\figure{matrizvarcovmuestra.png}{options: width="50\%" alt="Figure: matrizvarcovmuestra.png"}}
-#' \if{latex}{\figure{matrizvarcovmuestra.png}{options: scale=.5}}
+#' \if{latex}{\figure{matrizvarcovmuestra.png}{options: width=8cm}}
 #'
 #' (2) Muchos manuales y prácticamente todos los softwares (SPSS, Excel, etc.) facilitan la matriz de cuasi-varianzas y cuasi-covarianzas muestrales:
 #'
 #' \if{html}{\figure{matrizvarcovcuasi.png}{options: width="55\%" alt="Figure: matrizvarcovcuasi.png"}}
-#' \if{latex}{\figure{matrizvarcovcuasi.png}{options: scale=.55}}
+#' \if{latex}{\figure{matrizvarcovcuasi.png}{options: width=8cm}}
 #'
 #' Nosotros nos referimos a esta expresión como cuasi-covarianza muestral.
 #'
@@ -43,7 +49,7 @@
 #' Si en lugar del tamaño muestral (n) se utiliza el tamaño de la población (N) se obtiene la matriz de varianzas y covarianzas poblacional:
 #'
 #' \if{html}{\figure{matrizvarcovpob.png}{options: width="55\%" alt="Figure: matrizvarcovpob.png"}}
-#' \if{latex}{\figure{matrizvarcovpob.png}{options: scale=.55}}
+#' \if{latex}{\figure{matrizvarcovpob.png}{options: width=8cm}}
 #'
 #' @seealso \code{\link{varianza}}, \code{\link{desviacion}}
 #'
@@ -71,10 +77,15 @@ matriz.covar <- function(x, variable = NULL,
   tipo <- tolower(tipo)
   tipo <- match.arg(tipo)
 
+  x <- data.frame(x)
+  varnames <- names(x)
+
   if(is.null(variable)){
 
-    x <- data.frame(x)
-    varnames <- names(x)
+    varcuan <-  names(x[unlist(lapply(x, is.numeric))])
+    seleccion = match(varcuan,varnames)
+    x <- x[seleccion]
+    varnames <- varcuan
 
   } else{
 
@@ -108,7 +119,7 @@ matriz.covar <- function(x, variable = NULL,
   clase <- sapply(x, class)
 
   if (!all(clase %in% c("numeric","integer"))) {
-    stop("No puede calcularse la varianza, alguna variable que has seleccionado no es cuantitativa")
+    stop("No puede calcularse la matriz de varianzas-covarianzas, alguna variable que has seleccionado no es cuantitativa")
   }
 
   if(tipo == "muestral"){
@@ -130,7 +141,7 @@ matriz.covar <- function(x, variable = NULL,
     filename <- paste("Matriz de covarianzas"," (", Sys.time(), ").xlsx", sep = "")
     filename <- gsub(" ", "_", filename)
     filename <- gsub(":", ".", filename)
-    rio::export(matriz_covar, row.names = TRUE, file = filename)
+    rio::export(matriz_covar, rowNames = TRUE, file = filename)
   }
 
   return(matriz_covar)

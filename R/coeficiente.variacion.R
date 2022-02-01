@@ -2,6 +2,12 @@
 #' @title Coeficiente de variación.
 #'
 #' @description Calcula el coeficiente de variación de Pearson.
+#'
+#' Lee el código QR para video-tutorial sobre el uso de la función con un ejemplo.
+#'
+#' \if{html}{\figure{qrdispersion.png}{options: width="25\%" alt="Figure: qricvarianza.png"}}
+#' \if{latex}{\figure{qrdispersion.png}{options: width=3cm}}
+#'
 #' @usage coeficiente.variacion(x,
 #'                    variable = NULL,
 #'                    pesos = NULL,
@@ -31,7 +37,7 @@
 #' El coeficiente de variación (muestral) se obtiene a partir de la siguiente expresión:
 #'
 #' \if{html}{\figure{coeficientevariacion.png}{options: width="20\%" alt="Figure: coeficientevariacion.png"}}
-#' \if{latex}{\figure{coeficientevariacion.png}{options: scale=.2}}
+#' \if{latex}{\figure{coeficientevariacion.png}{options: width=2cm}}
 #'
 #' donde S es la desviación típica muestral. También puede calcularse utilizando la cuasi-desviación típica (Sc).
 #'
@@ -39,7 +45,7 @@
 #' Si en lugar del tamaño muestral (n) se utiliza el tamaño de la población (N), se obtiene el coeficiente de variación poblacional:
 #'
 #' \if{html}{\figure{coeficientevariacionpob.png}{options: width="20\%" alt="Figure: coeficientevariacionpob.png"}}
-#' \if{latex}{\figure{coeficientevariacionpob.png}{options: scale=.2}}
+#' \if{latex}{\figure{coeficientevariacionpob.png}{options: width=2cm}}
 #'
 #' @references
 #' Esteban García, J. y otros. (2005). Estadística descriptiva y nociones de probabilidad. Paraninfo. ISBN: 9788497323741
@@ -56,7 +62,10 @@
 #' @import dplyr
 #'
 #' @export
-coeficiente.variacion <- function(x, variable = NULL, pesos= NULL, tipo = c("muestral","cuasi")){
+coeficiente.variacion <- function(x,
+                                  variable = NULL,
+                                  pesos= NULL,
+                                  tipo = c("muestral","cuasi")){
 
   tipo <- tolower(tipo)
   tipo <- match.arg(tipo)
@@ -67,7 +76,10 @@ coeficiente.variacion <- function(x, variable = NULL, pesos= NULL, tipo = c("mue
 
   if(is.null(variable)){
 
-    x <- x
+    varcuan <-  names(x[unlist(lapply(x, is.numeric))])
+    seleccion = match(varcuan,varnames)
+    x <- x[seleccion]
+    varnames <- varcuan
 
   } else{
 
@@ -160,15 +172,15 @@ coeficiente.variacion <- function(x, variable = NULL, pesos= NULL, tipo = c("mue
 
   } else{
 
-    valor_media <- media(x,variable = variable, pesos = pesos)
+    valor_media <- media(x,variable = 1, pesos = 2)
 
     if(tipo=="muestral"){
 
-      valor_desviacion <- desviacion(x,variable = variable, pesos = pesos)
+      valor_desviacion <- desviacion(x,variable = 1, pesos = 2)
 
     } else{
 
-      valor_desviacion <- desviacion(x,variable = variable, pesos = pesos, tipo="cuasi")
+      valor_desviacion <- desviacion(x,variable = 1, pesos = 2, tipo="cuasi")
 
     }
 

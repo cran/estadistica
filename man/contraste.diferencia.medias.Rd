@@ -41,6 +41,11 @@ La función devuelve un objeto de la clase \code{list}. La lista contendrá info
 }
 \description{
 Realiza el contraste de hipótesis sobre la diferencia de medias poblacionales.
+
+Lee el código QR para video-tutorial sobre el uso de la función con un ejemplo.
+
+\if{html}{\figure{qrcdifmedias.png}{options: width="25\%" alt="Figure: qricvarianza.png"}}
+\if{latex}{\figure{qrcdifmedias.png}{options: width=3cm}}
 }
 \references{
 Casas José M. (1997) Inferencia estadística. Editorial: Centro de estudios Ramón Areces, S.A. ISBN: 848004263-X
