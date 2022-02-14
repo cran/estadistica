@@ -26,16 +26,13 @@
 #' \strong{Rosario Martínez Verdú}.
 #' \emph{Economía Aplicada.}
 #'
-#' \strong{Cristina Pardo-García}.
-#' \emph{Métodos Cuantitativos para la Medición de la Cultura (MC2). Economía Aplicada.}
-#'
 #' Facultad de Economía. Universidad de Valencia (España)
 #'
 #' @details
 #'
 #' El coeficiente de asimetría se obtiene a partir de la expresión:
 #'
-#' \if{html}{\figure{asimetriamuestra.png}{options: width="25\%" alt="Figure: asimetriamuestra.png"}}
+#' \if{html}{\figure{asimetriamuestra.png}{options: width="20\%" alt="Figure: asimetriamuestra.png"}}
 #' \if{latex}{\figure{asimetriamuestra.png}{options: width=3cm}}
 #'
 #' y el coeficiente de curtosis:
@@ -46,7 +43,7 @@
 #' @note
 #' (1) El coeficiente de asimetría poblacional es:
 #'
-#' \if{html}{\figure{asimetriapob.png}{options: width="25\%" alt="Figure: asimetriapob.png"}}
+#' \if{html}{\figure{asimetriapob.png}{options: width="20\%" alt="Figure: asimetriapob.png"}}
 #' \if{latex}{\figure{asimetriapob.png}{options: width=3cm}}
 #'
 #' (2) El coeficiente de curtosis poblacional es:
@@ -88,9 +85,9 @@ medidas.forma <- function(x,
   x <- data.frame(x)
   varnames <- names(x)
 
-  if(is.null(variable)){
+  if(is.null(variable) & length(x)>1){
 
-    x <- x[,order(names(x))]
+    x <- x[,order(names(x))] %>% as.data.frame()
     varnames <- names(x)
 
   } else{
@@ -176,7 +173,7 @@ medidas.forma <- function(x,
     desv.x <- as.numeric(desviacion(x))
 
     asimetria <- momento3/desv.x^3
-    curtosis <- momento4/desv.x^4
+    curtosis <- momento4/desv.x^4 - 3
 
 
   } else{
@@ -191,7 +188,7 @@ medidas.forma <- function(x,
         summarize(momento3 = sum(sumatorio3)/sum(pesos),
                   momento4 = sum(sumatorio4)/sum(pesos),
                   asimetria = sum(sumatorio3)/(sum(pesos)*desv.x^3),
-                  curtosis = sum(sumatorio4)/(sum(pesos)*desv.x^4))
+                  curtosis = sum(sumatorio4)/(sum(pesos)*desv.x^4) - 3)
 
     N <- sum(x[2])
 
