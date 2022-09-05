@@ -17,7 +17,7 @@
 #' @param pesos Si los datos de la variable están resumidos en una distribución de frecuencias, debe indicarse la columna que representa los valores de la variable y la columna con las frecuencias o pesos.
 #' @param tipo Es un carácter. Por defecto de calcula la desviación típica muestral (\code{tipo = "muestral"}). Si \code{tipo = "cuasi"}, se calcula la cuasi-desviación típica muestral.
 #'
-#' @return Esta función devuelve un objeto de la clase \code{data.frame}. Si \code{tipo="muestral"}, devuelve la desviación típica muestral. Si \code{tipo="cuasi"}, devuelve la cuasi-desviación típica muestral.
+#' @return Esta función devuelve un objeto de la clase \code{vector}. Si \code{tipo="muestral"}, devuelve la desviación típica muestral. Si \code{tipo="cuasi"}, devuelve la cuasi-desviación típica muestral.
 #'
 #' @author
 #' \strong{Vicente Coll-Serrano}.
@@ -76,8 +76,15 @@ desviacion <- function(x, variable = NULL, pesos = NULL, tipo = c("muestral","cu
   tipo <- tolower(tipo)
   tipo <- match.arg(tipo)
 
+  if(is.numeric(x)){
+    varnames <- "variable.x"
+  }else{
+    varnames <- as.character(names(x))
+  }
+
   x <- data.frame(x)
-  varnames <- names(x)
+  names(x) <- varnames
+
 
   if(is.null(variable)){
 
@@ -187,11 +194,13 @@ desviacion <- function(x, variable = NULL, pesos = NULL, tipo = c("muestral","cu
 
     if(tipo == "muestral"){
 
-      desviacion <- desviacion %>% summarize(desviacion = sqrt(sum(sumatorio)/sum(pesos)))
+      desviacion <- desviacion %>%
+        summarize(desviacion = sqrt(sum(sumatorio)/sum(pesos)))
 
     } else{
 
-      desviacion <- desviacion %>% summarize(desviacion = sqrt(sum(sumatorio)/(sum(pesos)-1)))
+      desviacion <- desviacion %>%
+        summarize(desviacion = sqrt(sum(sumatorio)/(sum(pesos)-1)))
 
     }
 
@@ -200,6 +209,7 @@ desviacion <- function(x, variable = NULL, pesos = NULL, tipo = c("muestral","cu
 
   }
 
+  desviacion <- as.numeric(desviacion) %>% round(4)
   names(desviacion) <- paste("desviacion_",varnames,sep="")
 
   return(desviacion)

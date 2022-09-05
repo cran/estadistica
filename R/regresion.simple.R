@@ -54,12 +54,12 @@
 #' \if{html}{\figure{regresion2.png}{options: width="75\%" alt="Figure: regresion2"}}
 #' \if{latex}{\figure{regresion2.png}{options: width=10cm}}
 #'
-#' En las representaciones gráficas las observaciones influyentes (extremos) se detectan a partir del punto inflyente o índice de leverage:
+#' En las representaciones gráficas las observaciones anómals se detectan a partir del punto leverage:
 #'
 #' \if{html}{\figure{influyente.png}{options: width="50\%" alt="Figure: influyente.png"}}
 #' \if{latex}{\figure{influyente.png}{options: width=6cm}}
 #'
-#' de forma que una observación que una observación será influyente si:
+#' de forma que una observación tendrá efecto de apalancamiento si:
 #'
 #' \if{html}{\figure{obsinfluyente.png}{options: width="25\%" alt="Figure: obsinfluyente.png"}}
 #' \if{latex}{\figure{obsinfluyente.png}{options: width=2.5cm}}
@@ -108,14 +108,16 @@ regresion.simple <- function(x,
                              exportar = FALSE){
 
   old <- options()
-  on.exit(options(old))
+#  on.exit(options(old))
 
-  options(scipen = 999)
+  options(scipen=999, digits=4)
 
   if(isFALSE(introducir)){
 
+    varnames <- as.character(names(x))
     x <- data.frame(x)
-    varnames <- names(x)
+    names(x) <- varnames
+
 
     if(length(x)<2){
       stop("El conjunto de datos seleccionada solo tiene una variable.")
@@ -165,9 +167,9 @@ regresion.simple <- function(x,
       variable <- c(var_indepen,var_depen)
 
 
-      x <- x[,variable] %>% as.data.frame()
-      names(x) <- varnames[variable]
-      varnames <- names(x)
+      x <- x[,variable] %>% as.matrix
+      colnames(x) <- varnames[variable]
+      varnames <- colnames(x)
 
     clase <- sapply(x, class)
 
@@ -179,8 +181,8 @@ regresion.simple <- function(x,
   # tabla de resultados parciales
 
   n <- nrow(x)
-  Y <- as.matrix(x[2]) # matriz coeficinetes v.depen
-  vx <- as.matrix(x[1]) # matriz coeficientes v.indepen
+  Y <- matrix(x[,2],ncol=1) # matriz coeficinetes v.depen
+  vx <- matrix(x[,1],ncol=1) # matriz coeficientes v.indepen
   vX <- cbind(x0=rep(1,n),vx) # con termino constante
 
   k = ncol(vX) #columnas de la matriz vX (constante + regresores)
@@ -194,24 +196,37 @@ regresion.simple <- function(x,
 
   invA <- solve(A)
   coeficientes <- invA%*%B
-  names(coeficientes) <- c("constante",varnames[1])
+  colnames(coeficientes) <- "Parametros"
+  rownames(coeficientes) <- c("constante",varnames[1])
 
-  mediay <- as.numeric(media(Y))
+  mediay <- mean(Y)
   valores.teoricos <- vX%*%coeficientes
+  colnames(valores.teoricos) <- "Valores.teoricos"
+
   residuos <- Y - valores.teoricos # observado - estimado
+  colnames(residuos) <- "errores"
 
+  sc.observados = (Y-mediay)^2
+  colnames(sc.observados) <- "sc.observados"
 
-  tabla <- x %>%
-    rename(vx=varnames[1],vy=varnames[2]) %>%
-    mutate(obs = 1:n,
-           vx2 = vx^2,
-           vy2 = vy^2,
-           vxy = vx * vy,
-           valores.teoricos = valores.teoricos,
-           errores = Y - valores.teoricos,
-           sc.observados = (Y-mediay)^2,
-           sc.teoricos = (valores.teoricos - mediay)^2,
-           errores2 = errores^2) %>%
+  sc.teoricos = (valores.teoricos - mediay)^2
+  colnames(sc.teoricos) <- "sc.teoricos"
+
+  errores2 = residuos^2
+  colnames(errores2) <- "errores2"
+
+  tabla <- cbind(x,
+                 obs = 1:n,
+                 vx2 = x[,1]^2,
+                 vy2 = x[,2]^2,
+                 vxy = x[,1] * x[,2],
+                 valores.teoricos,
+                 residuos,
+                 sc.observados,
+                 sc.teoricos,
+                 errores2) %>%
+    as.data.frame() %>%
+    round(4) %>%
     select(obs,everything())
 
   names(tabla) <- c("id",
@@ -223,13 +238,13 @@ regresion.simple <- function(x,
                     "errores",
                     "sc.observados",
                     "sc.teoricos",
-                    "errores2")
+                    "errores^2")
 
   tabla2 <- tabla %>%
     kable(caption = "c\u00e1lculos intermedios")
 
   # SUMA DE CUADRADOS
-  SCE <- as.numeric(t(residuos)%*%residuos)
+  SCE <- t(residuos)%*%residuos %>% as.numeric()
   SCT <- sum(Y^2)-n*(mean(Y)^2)
   SCR <- sum(t(coeficientes)%*%B)-n*(mean(Y)^2)
 
@@ -244,7 +259,11 @@ regresion.simple <- function(x,
                         varianza.residual = SCE/n,
                         coeficiente.determinacion = SCR/SCT,
                         coeficiente.correlacion = sqrt(SCR/SCT)) %>%
-    t() %>% as.data.frame()
+    t() %>%
+    round(4) %>%
+    as.data.frame()
+
+  names(resumen) <- "Resumen"
 
   resumen2 <- resumen %>%
     kable(col.names="Valor",
@@ -284,7 +303,11 @@ regresion.simple <- function(x,
                 varianza.residual = vary - varianza.regresion,
                 constante = constante,
                 coeficiente.regresion = coeficiente.regresion) %>%
-      t() %>% as.data.frame
+      t() %>%
+      round(4) %>%
+      as.data.frame()
+
+    names(resumen) <- "Resumen"
 
 
     resumen2 <- resumen %>%
@@ -319,7 +342,7 @@ regresion.simple <- function(x,
 
     } else{
 
-      resultados.parciales <- resumen %>% slice(1,10,9,2,3,4,5,6)
+      resultados.parciales <- resumen %>% slice(1,10,9,7,8,4,5,6)
       resultados.parciales[4,1] <- SCE/(n-k)
       resultados.parciales[5,1] <- sqrt(SCE/(n-k))
 
@@ -375,6 +398,7 @@ regresion.simple <- function(x,
 
       # p-valores
       p_valor <- 2 * apply(abs(t),1,pt,df=n-k,lower.tail=FALSE)
+      p_valor <- round(p_valor,6)
 
       # intervalo de confianza
       alfa2 <- (1-confianza)/2
@@ -417,14 +441,17 @@ regresion.simple <- function(x,
         select(1,2,3,7,8,11) %>%
         rename("X"=varnames[1],"Y"=varnames[2]) %>%
         mutate(momento = (X-mediax)^2,
-               influencia = 1/n + (momento/sum(momento)),
-               puntos.influyentes = ifelse(influencia > 3 * k/n, "influyente", "no influyente"),
-               error.norm = errores/(sqrt(sum(errores2)/(n-2))*sqrt(1-influencia)),
+               leverage = 1/n + (momento/sum(momento)),
+               puntos.palanca = ifelse(leverage > 3 * k/n, "palanca", "no palanca"),
+               error.norm = errores/(sqrt(sum(errores2)/(n-2))*sqrt(1-leverage)),
                atipico = ifelse(abs(error.norm)>2,"atipico","no atipico"),
-               grupo = paste(puntos.influyentes,"_",atipico,sep=""))
+               grupo = paste(puntos.palanca,"_",atipico,sep=""))
 
-      tablaplot$grupo <- factor(tablaplot$grupo,
-                                levels=c("influyente_atipico","influyente_no atipico","no influyente_atipico","no influyente_no atipico"))
+      tablaplot$grupo <- factor(tablaplot$grupo)
+      levels(tablaplot$grupo) <- list(palanca_atipico = "palanca_atipico",
+                                      palanca_no.atipico = "palanca_no atipico",
+                                      no.palanca_atipico = "no palanca_atipico",
+                                      normal = "no palanca_no atipico")
 
       #miscolores <- brewer.pal(4,"Set1")
       miscolores <- c("red","purple","chocolate","darkgreen")
@@ -445,30 +472,39 @@ regresion.simple <- function(x,
                                         drop = TRUE,
                                         limits= levels(tablaplot$grupo))
 
-      plot1 <- ggplot(tablaplot,aes(x=X,y=Y)) +
+      plot1 <- ggplot(tablaplot,aes(x=X,y=Y,label=id)) +
         geom_point(aes(color=grupo,shape=grupo),size=2) +
         escalaColor +
         escalaForma +
         geom_smooth(method = "lm", formula = y ~ x, se = FALSE,color="blue") +
+        geom_text(data=subset(tablaplot,grupo!='normal'),
+                  vjust = -0.7,
+                  size= 2) +
         labs(title = "Modelo de regresi\u00f3n estimado",
-             subtitle= paste(varnames[2],"=",round(coeficientes[1],5),if_else(coeficientes[2] >=0, "+", ""),round(coeficientes[2],5),"*",varnames[1],sep="")
-        )
+             subtitle= paste(varnames[2],"=",round(coeficientes[1],5),if_else(coeficientes[2] >=0, "+", ""),round(coeficientes[2],5),"*",varnames[1],sep=""),
+             x = varnames[1],
+             y = varnames[2]) +
+        theme_classic() +
+        theme(legend.title = element_blank(),
+              legend.key.size = unit(0, 'lines'),
+              legend.position = "bottom",
+              legend.text = element_text(size = 6))
 
 
-      plot12 <- ggplot(tablaplot,aes(x=valores.teoricos,y=errores)) +
-        geom_point()
+      #plot12 <- ggplot(tablaplot,aes(x=valores.teoricos,y=errores)) +
+      #  geom_point()
 
       plot21 <- ggplot(tablaplot, aes(x=id,y=valores.teoricos,color=grupo,shape=grupo,label=id)) +
         geom_point() +
         geom_hline(yintercept = mediay) +
-      geom_text(data=subset(tablaplot,grupo!='no influyente_no atipico'),
-                vjust = -0.75,
+      geom_text(data=subset(tablaplot,grupo!='normal'),
+                vjust = -0.55,
                 size=2) +
         labs(y="valores pronosticados (teoricos)") +
         escalaColor +
-        escalaForma
-
-      plot21
+        escalaForma +
+        theme_classic()+
+        theme(legend.position = "none")
 
 
       plot22 <- ggplot(tablaplot, aes(x=id,y=error.norm,color=grupo,shape=grupo,label=id)) +
@@ -476,12 +512,14 @@ regresion.simple <- function(x,
         geom_hline(yintercept = 0) +
         geom_hline(yintercept = 2, linetype=2) +
         geom_hline(yintercept = -2, linetype=2) +
-        geom_text(data=subset(tablaplot,grupo!='no influyente_no atipico'),
-                  vjust = -0.75,
+        geom_text(data=subset(tablaplot,grupo!='normal'),
+                  vjust = -0.7,
                   size=2) +
         labs(y="errores estandarizados") +
         escalaColor +
-        escalaForma
+        escalaForma +
+        theme_classic()+
+        theme(legend.position = "none")
 
       #plot <- gridExtra::grid.arrange(plot1,plot12,plot21,plot22, ncol=2, nrow=2)
       plot <- gridExtra::grid.arrange(plot1,gridExtra::arrangeGrob(plot21,plot22), ncol=2)
@@ -575,5 +613,7 @@ regresion.simple <- function(x,
     }
 
   }
+
+  on.exit(options(old))
 
 }

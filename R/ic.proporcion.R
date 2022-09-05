@@ -34,19 +34,25 @@
 #'
 #' @details
 #'
-#' (1) Para tamaños muestrales muy grandes:
+#' (1) Para tamaños muestrales muy grandes (n>100):
 #'
-#' \if{html}{\figure{icproporcion3.png}{options: width="80\%" alt="Figure: "icproporcion3.png"}}
+#' \if{html}{\figure{icproporcion3.png}{options: width="80\%"}}
 #' \if{latex}{\figure{icproporcion3.png}{options: width=12cm}}
+#'
+#' El usuario puede elegir entre tres estrategias:
+#'
+#' (1.1) En el error típico aproximar p por su estimación muestral.
+#' (1.2) En el error típico considerar el caso: p=q=0.5
+#' (1.3) Obtener el valor de p a partir del estadístico.
 #'
 #' (2) Para cualquier tamaño muestral puede obtenerse el intervalo:
 #'
-#' \if{html}{\figure{icproporcion1.png}{options: width="15\%" alt="Figure: icproporcion2.png"}}
+#' \if{html}{\figure{icproporcion1.png}{options: width="15\%"}}
 #' \if{latex}{\figure{icproporcion1.png}{options: width=2.5cm}}
 #'
 #' correspondiendo los valores a las raíces de:
 #'
-#' \if{html}{\figure{icproporcion2.png}{options: width="80\%" alt="Figure: icproporcion2.png"}}
+#' \if{html}{\figure{icproporcion2.png}{options: width="80\%"}}
 #' \if{latex}{\figure{icproporcion2.png}{options: width=12cm}}
 #'
 #' @references
@@ -70,7 +76,7 @@ ic.proporcion <- function(x,
                           grafico = FALSE){
 
 
-  print("Intervalo de confianza de una proporci\u00f3n. El tama\u00f1o de la muestra es grande.")
+  #print("Intervalo de confianza de una proporci\u00f3n. El tama\u00f1o de la muestra es grande.")
 
   if(confianza >= 0 & confianza <=1){
 
@@ -162,9 +168,11 @@ if(isFALSE(introducir)) {
   # tama\u00f1o de la muestra
   n <- nrow(x)
 
-  if(n < 30){
-    stop("El tama\u00f1o de la muestra es peque\u00f1a, la aproximaci\u00f3n a la normal no es buena.")
+  if(n < 100){
+    print("El tama\u00f1o de la muestra no es suficientemente grande (n<100), la aproximaci\u00f3n a la normal no es buena.")
+    print("Se obtendr\u00e1 el intervalo de p a partir del c\u00e1lculo de probabilidad del estad\u00edstico. Este criterio no tiene en cuenta el tama\u00f1o de la muestra." )
   }
+
 
   # media muestral
 
@@ -175,9 +183,11 @@ if(isFALSE(introducir)) {
   n <- readline(prompt = "Introducir el tama\u00f1o de la muestra: ")
   n <- as.numeric(n)
 
-  if(n < 30){
-    stop("El tama\u00f1o de la muestra es peque\u00f1a, la aproximaci\u00f3n a la normal no es buena.")
+  if(n < 100){
+    print("El tama\u00f1o de la muestra no es suficientemente grande (n<100), la aproximaci\u00f3n a la normal no es buena.")
+    print("Se obtendr\u00e1 el intervalo de p a partir del c\u00e1lculo de probabilidad del estad\u00edstico. Este criterio no tiene en cuenta el tama\u00f1o de la muestra." )
   }
+
 
     p_mu <- readline(prompt = "Introducir el valor de la proporci\u00f3n muestral: ")
     p_mu <- as.numeric(p_mu)
@@ -187,22 +197,11 @@ if(isFALSE(introducir)) {
 
   if(isFALSE(irrestricto)){
 
-    aproximacion <- as.numeric(readline('\u00bfQuieres aproximar el valor de p por la proporci\u00f3n muestral? \n 1. "S\u00ed" \n 2. "No" \n'))
-
-    if(aproximacion == 1){
-
-      print("Como n es suficientemente grande, se aproxima el valor de p poblacional por su estimaci\u00f3n puntual (p muestral)")
-
-      error_tipico <- sqrt((p_mu * (1-p_mu))/n)
-      limite_inferior <- p_mu - valor_critico * error_tipico
-      limite_superior <- p_mu + valor_critico * error_tipico
-
-    } else{
-
-      aproximacion  <- 2
-
-      print("Este criterio no tiene en cuenta el tama\u00f1o de la muestra. Se obtendr\u00e1 el intervalo de p a partir del c\u00e1lculo de probabilidad del estad\u00edstico")
+    if(n < 100){
       print("El intervalo obtenido no es sim\u00e9trico respecto a la proporci\u00f3n muestral")
+
+      aproximacion <- 3
+
       x <- n + valor_critico^2
       y <- -(2 * p_mu * n + valor_critico^2)
       z <- p_mu^2 * n
@@ -219,6 +218,51 @@ if(isFALSE(introducir)) {
 
         limite_inferior <- limite_sup
         limite_superior <- limite_inf
+
+      }
+
+    } else{
+
+      aproximacion <- as.numeric(readline('\u00bfQue estrategia quieres utilizar para aproximar el valor de p en el error t\u00edpico? \n 1. "Aproximar por la proporci\u00f3n muestral" \n 2. "p=q=0.5" \n 3. "Obtener el valor de p a partir del estad\u00edstico" \n'))
+
+      if(aproximacion == 1){
+
+        print("Como n es suficientemente grande, se aproxima el valor de p poblacional por su estimaci\u00f3n puntual (p muestral)")
+
+        error_tipico <- sqrt((p_mu * (1-p_mu))/n)
+        limite_inferior <- p_mu - valor_critico * error_tipico
+        limite_superior <- p_mu + valor_critico * error_tipico
+
+      } else if(aproximacion == 2){
+
+        error_tipico <- sqrt(0.25/n)
+        limite_inferior <- p_mu - valor_critico * error_tipico
+        limite_superior <- p_mu + valor_critico * error_tipico
+
+      } else{
+
+        aproximacion  <- 3
+
+        print("Este criterio no tiene en cuenta el tama\u00f1o de la muestra. Se obtendr\u00e1 el intervalo de p a partir del c\u00e1lculo de probabilidad del estad\u00edstico")
+        print("El intervalo obtenido no es sim\u00e9trico respecto a la proporci\u00f3n muestral")
+        x <- n + valor_critico^2
+        y <- -(2 * p_mu * n + valor_critico^2)
+        z <- p_mu^2 * n
+
+        limite_inf <- (-y + sqrt((y^2) - (4 * x * z)))/(2 * x)
+        limite_sup <- (-y - sqrt((y^2) - (4 * x * z)))/(2 * x)
+
+        if(limite_inf <= limite_sup){
+
+          limite_inferior <- limite_inf
+          limite_superior <- limite_sup
+
+        } else{
+
+          limite_inferior <- limite_sup
+          limite_superior <- limite_inf
+
+        }
 
       }
 
@@ -240,7 +284,7 @@ if(isFALSE(introducir)) {
 
   if(grafico){
 
-    if(aproximacion == 2){
+    if(aproximacion == 3){
 
       intervalo <- data.frame(ic = round(c(inferior=limite_inferior,p_mu = p_mu, superior=limite_superior),4),y=c(0,0,0))
 

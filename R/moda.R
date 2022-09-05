@@ -22,9 +22,6 @@
 #' \strong{Rosario Martínez Verdú}.
 #' \emph{Economía Aplicada.}
 #'
-#' \strong{Cristina Pardo-García}.
-#' \emph{Métodos Cuantitativos para la Medición de la Cultura (MC2). Economía Aplicada.}
-#'
 #' Facultad de Economía. Universidad de Valencia (España)
 #'
 #' @references
@@ -39,10 +36,28 @@
 #' @export
 moda <- function(x, variable = NULL, pesos = NULL){
 
-  x <- data.frame(x)
-  varnames <- names(x)
+  if(class(x) %in% c("numeric","factor","integer","logical")){
+    varnames <- "variable.x"
+  }else{
+    varnames <- as.character(names(x))
+  }
 
-  if(!is.null(variable)){
+  x <- data.frame(x)
+  names(x) <- varnames
+
+  if(is.null(variable)){
+
+    varcuan <- x %>% select_if(function(col) is.numeric(col) |
+                                 is.integer(col) |
+                                 is.factor(col) |
+                                 is.logical(col)) %>%
+      names()
+
+    seleccion = match(varcuan,varnames)
+    x <- x[seleccion]
+    varnames <- varcuan
+
+  } else{
 
     if(is.numeric(variable)){
 
@@ -69,16 +84,6 @@ moda <- function(x, variable = NULL, pesos = NULL){
   }
 
 
-  if(length(x) == 1 ) {
-
-      variable.sel <- varnames
-
-      x <- x %>%
-        na.omit
-
-  }
-
-
   if(is.null(pesos) & !is.null(variable)){
 
     x <- x[,variable] %>% as.data.frame()
@@ -90,7 +95,7 @@ moda <- function(x, variable = NULL, pesos = NULL){
 
     if((length(variable) | length(pesos)) > 1){
 
-      stop("Para calcular la moda a partir de la distribuci\u00fn de frecuencias solo puedes seleccionar una variable y unos pesos")
+      stop("Para calcular la media a partir de la distribuci\u00fn de frecuencias solo puedes seleccionar una variable y unos pesos")
 
     }
 
@@ -131,37 +136,62 @@ moda <- function(x, variable = NULL, pesos = NULL){
 
   if(is.null(pesos)){
 
-    moda <- table(x)
-    moda <- names(moda)[which(moda==max(moda))]
-    moda <- as.numeric(moda)
+    moda_vacio <- vector("list",length=length(x))
 
-    if(length(moda)==nrow(x)){
-      warning("Esta variable no tiene moda, todos los valores tienen la misma frecuencia")
-      moda <- NA
+    for(i in 1:length(x)){
+
+      x_moda <- x[i] %>%
+        na.omit
+
+      valor_moda <- table(x_moda)
+      valor_moda <- names(valor_moda)[which(valor_moda==max(valor_moda))]
+      moda <- as.numeric(valor_moda)
+
+        if(length(moda)==nrow(x_moda)){
+          warning("Esta variable no tiene moda, todos los valores tienen la misma frecuencia")
+          moda <- NA
+        }
+
+     moda_vacio[[i]] <- moda
+
     }
+
+    max_long <-  max(lengths(moda_vacio))
+    moda <- sapply(moda_vacio, "[", seq_len(max_long))
+
+    if(is.vector(moda)){
+      moda <- matrix(moda,nrow=1,ncol=length(moda)) %>%
+        as.data.frame()
+    } else{
+      moda <- moda %>% as.data.frame()
+    }
+
+    names(moda) <- varnames
 
   } else{
 
-    moda <- x %>%
-      na.omit %>%
-      rename(variable2 = varnames[1], pesos = varnames[2]) %>%
-      group_by(variable2) %>%
-      summarize(frecuencia = sum(pesos), .groups = 'drop') %>%
-      arrange(desc(frecuencia)) %>%
-      as.data.frame()
+       moda <- x %>%
+        na.omit %>%
+        rename(variable2 = varnames[1], pesos = varnames[2]) %>%
+        group_by(variable2) %>%
+        summarize(frecuencia = sum(pesos), .groups = 'drop') %>%
+        arrange(desc(frecuencia)) %>%
+        as.data.frame()
 
-    valores_distintos <- unique(moda$variable2)
+      valores_distintos <- unique(moda$variable2)
 
-    moda <- moda %>%
-      summarize(moda = variable2[which(frecuencia == max(frecuencia))]) %>%
-      as.data.frame()
+      moda <- moda %>%
+        summarize(moda = variable2[which(frecuencia == max(frecuencia))]) %>%
+        as.data.frame()
 
-    if(nrow(moda) == length(valores_distintos)){
-      warning("Esta variable no tiene moda, todos los valores tienen la misma frecuencia")
-      moda <- NA
-    }
+      if(nrow(moda) == length(valores_distintos)){
+        warning("Esta variable no tiene moda, todos los valores tienen la misma frecuencia")
+        moda <- NA
+      }
 
-  }
+      names(moda) <- paste("moda_",varnames[1],sep="")
+
+     }
 
   return(moda)
 

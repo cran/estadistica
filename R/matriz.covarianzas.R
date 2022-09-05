@@ -26,9 +26,6 @@
 #' \strong{Rosario Martínez Verdú}.
 #' \emph{Economía Aplicada.}
 #'
-#' \strong{Cristina Pardo-García}.
-#' \emph{Métodos Cuantitativos para la Medición de la Cultura (MC2). Economía Aplicada.}
-#'
 #' Facultad de Economía. Universidad de Valencia (España)
 #'
 #' @details
@@ -77,8 +74,9 @@ matriz.covar <- function(x, variable = NULL,
   tipo <- tolower(tipo)
   tipo <- match.arg(tipo)
 
+  varnames <- as.character(names(x))
   x <- data.frame(x)
-  varnames <- names(x)
+  names(x) <- varnames
 
   if(is.null(variable)){
 
@@ -133,8 +131,8 @@ matriz.covar <- function(x, variable = NULL,
   }
 
   matriz_covar <- factor * var(x, na.rm = TRUE) %>%
-    as.data.frame()
-  names(matriz_covar) <- varnames
+    as.matrix()
+  colnames(matriz_covar) <- varnames
   row.names(matriz_covar) <- varnames
 
   if (exportar) {

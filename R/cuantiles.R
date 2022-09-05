@@ -59,16 +59,21 @@
 #'
 #' cuantiles1 <- cuantiles(startup[1])
 #' cuantiles2 <- cuantiles(startup,variable=1,cortes=seq(0.1,0.9,0.1))
-#' cuantiles3 <- cuantiles(salarios2018,variable=7,pesos=10 )
+#' cuantiles3 <- cuantiles(salarios2018,variable=6,pesos=7 )
 #'
 #' @export
 cuantiles <- function(x, variable = NULL, pesos = NULL,
                       cortes = c(0.25,0.5,0.75),
                       exportar = FALSE){
 
-  x <- data.frame(x)
-  varnames <- names(x)
+  if(is.numeric(x)){
+    varnames <- "variable.x"
+  }else{
+    varnames <- as.character(names(x))
+  }
 
+  x <- data.frame(x)
+  names(x) <- varnames
   if(is.null(variable)){
 
     varcuan <-  names(x[unlist(lapply(x, is.numeric))])

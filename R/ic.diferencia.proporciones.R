@@ -33,7 +33,9 @@
 #' \if{html}{\figure{icdifproporciones.png}{options: width="65\%" alt="icdifproporciones.png"}}
 #' \if{latex}{\figure{icdifproporciones.png}{options: width=12cm}}
 #'
-#' Nota: Las proporciones muestrales del error típico son sustituidas por sus estimaciones máximo-verosímiles (proporciones muestrales).
+#' Nota: El usuario puede seguir dos estrategias:
+#' (1) Sustituir las proporciones muestrales del error típico por sus estimaciones máximo-verosímiles (proporciones muestrales)
+#' (2) Considerar el caso: p=q=0.5
 #'
 #' @references
 #' Casas José M. (1997) Inferencia estadística. Editorial: Centro de estudios Ramón Areces, S.A. ISBN: 848004263-X
@@ -151,8 +153,8 @@ if(isFALSE(introducir)) {
 } else{   # aqu\u00ed empieza introducir datos
 
 
-  print("Primero vas a introducir los datos de la muestra 1 y a continuaci\u00fen introducir\u00e1s los datos de la muestra 2")
-  print("Si los datos provienen de encuestas realizadas antes y despu\u00e9s de una determinada acci\u00f3n, introduce primero los datos de la encuesta realizada despu\u00e9s de dicha acci\u00f3n")
+  print("Primero vas a introducir los datos de la muestra 1 y a continuaci\u00f3n introducir\u00e1s los datos de la muestra 2")
+  print("Si los datos provienen de encuestas realizadas antes y despu\u00e9s de una determinada acci\u00f3n, introduce primero los datos de la encuesta realizada despu\u00e9s de dicha acci\u00f3n.")
 
   n1 <- readline(prompt = "Introducir el tama\u00f1o de la muestra 1: ")
   n1 <- as.numeric(n1)
@@ -183,8 +185,17 @@ if(isFALSE(introducir)) {
 
   }
 
+  aproximacion <- as.numeric(readline('\u00bfQue estrategia quieres utilizar para aproximar el valor de p en el error t\u00edpico? \n 1. "Aproximar por las proporciones muestrales" \n 2. "p=q=0.5" \n'))
 
-  error_tipico <- sqrt((p_mu1 * (1-p_mu1))/n1 + (p_mu2 * (1-p_mu2))/n2)
+  if(aproximacion == 1){
+
+    error_tipico <- sqrt((p_mu1 * (1-p_mu1))/n1 + (p_mu2 * (1-p_mu2))/n2)
+
+  } else{
+
+    error_tipico <- sqrt(0.25/n1 + 0.25/n2)
+
+  }
 
   limite_inf <- (p_mu1 - p_mu2) - valor_critico * error_tipico
   limite_sup <- (p_mu1 - p_mu2) + valor_critico * error_tipico
@@ -199,7 +210,6 @@ if(isFALSE(introducir)) {
     limite_inferior <- limite_sup
     limite_superior <- limite_inf
   }
-
 
   if(grafico){
 
