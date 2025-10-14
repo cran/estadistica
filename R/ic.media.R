@@ -7,14 +7,6 @@
 #' \if{html}{\figure{qricmedia.png}{options: width="25\%" alt="Figure: qricmedia.png"}}
 #' \if{latex}{\figure{qricmedia.png}{options: width=3cm}}
 #'
-#' @usage ic.media(x,
-#'           variable = NULL,
-#'           introducir = FALSE,
-#'           poblacion = c("normal","desconocida"),
-#'           var_pob = c("conocida","desconocida"),
-#'           confianza = 0.95,
-#'           grafico = FALSE)
-#'
 #' @param x Conjunto de datos. Puede ser un vector o un dataframe.
 #' @param variable Es un vector (numérico o carácter) que indica las variables a seleccionar de \code{x}. Si \code{x} se refiere una sola variable, \code{variable = NULL}. En caso contrario, es necesario indicar el nombre o posición (número de columna) de la variable.
 #' @param introducir Valor lógico. Si \code{introducir = FALSE} (por defecto), el usuario debe indicar el conjunto de datos que desea analizar usando los argumentos \code{x} y/o \code{variable}. Si \code{introducir = TRUE}, se le solicitará al ususario que introduzca la información relevante sobre tamaño muestral, valor de la media muestral, etc.
@@ -75,7 +67,7 @@
 #' Newbold, P, Carlson, W. y Thorne, B. (2019). Statistics for Business and Economics, Global Edition. Pearson. ISBN: 9781292315034
 #'
 #' @importFrom stats pnorm qnorm pt qt na.omit dt
-#' @import dplyr ggplot2 grid
+#' @import dplyr ggplot2 cowplot
 #'
 #' @export
 ic.media <- function(x,
@@ -376,8 +368,8 @@ if(isFALSE(introducir)) {
 
 
 
-    plot <- grid::grid.draw(rbind(ggplotGrob(plot11), ggplotGrob(plot12), size = "first"))
-
+    # plot <- grid::grid.draw(rbind(ggplotGrob(plot11), ggplotGrob(plot12), size = "first"))
+    plot <- cowplot::plot_grid(plot11, plot12, ncol = 1)
 
   } else if(poblacion == "desconocida" & var_pob == "conocida" & n<30) {
 

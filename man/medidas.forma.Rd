@@ -4,11 +4,13 @@
 \alias{medidas.forma}
 \title{Medidas de forma}
 \usage{
-medidas.forma(x,
-variable = NULL,
-pesos = NULL,
-alternativa = FALSE,
-exportar = FALSE)
+medidas.forma(
+  x,
+  variable = NULL,
+  pesos = NULL,
+  alternativa = FALSE,
+  exportar = FALSE
+)
 }
 \arguments{
 \item{x}{Conjunto de datos, que puede estar formado por una o más variables.}
@@ -74,7 +76,7 @@ Newbold, P, Carlson, W. y Thorne, B. (2019). Statistics for Business and Economi
 Murgui, J.S. y otros. (2002). Ejercicios de estadística Economía y Ciencias sociales. tirant lo blanch. ISBN: 9788484424673
 }
 \seealso{
-\code{\link{momento.central}},\code{\link{varianza}},\code{\link{desviacion}}
+\code{\link{varianza}},\code{\link{desviacion}}
 }
 \author{
 \strong{Vicente Coll-Serrano}.

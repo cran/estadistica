@@ -1,8 +1,8 @@
 utils::globalVariables(c("ni", "fi", "sumatorio", "variable2",
                          "frecuencia", "valor", "cuantiles_int",
                          "filas", "columnas", "name","rbindlist",
-                         "y","var_muestra","media_x","sumatorio3","sumatorio4",
-                         "ic","inferior","superior", "color","varianza.muestral",
+                         "y","var_muestra","media_x","sumatorio3","sumatorio4","desv.x.muestra","asimetria_soft",
+                         "curtosis_soft","error_curtosis","ic","inferior","superior", "color","varianza.muestral",
                          "media.muestral","incluido","value",
                          "grupo","grupo2","vx","vy","coeficiente.determinacion",
                          "varianza.regresion","valores.teoricos","errores",
@@ -12,4 +12,4 @@ utils::globalVariables(c("ni", "fi", "sumatorio", "variable2",
                          "X","momento", "atipico", "lm", "mediamovil", "paso1_ive",
                          "periodo", "pivot_wider", "matriz","variable_serie",
                          "A1","A2","c1","c2","c3","error_asimetria","var_coef","prediccion",".",
-                         "variable1","variable2"))
+                         "variable1","variable2","..density.."))

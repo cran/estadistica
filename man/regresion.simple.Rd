@@ -4,14 +4,16 @@
 \alias{regresion.simple}
 \title{Regresión lineal simple.}
 \usage{
-regresion.simple(x,
-                 var_depen = NULL,
-                 var_indepen = NULL,
-                 introducir = FALSE,
-                 inferencia = FALSE,
-                 confianza = 0.95,
-                 grafico = FALSE,
-                 exportar = FALSE)
+regresion.simple(
+  x,
+  var_depen = NULL,
+  var_indepen = NULL,
+  introducir = FALSE,
+  inferencia = FALSE,
+  confianza = 0.95,
+  grafico = FALSE,
+  exportar = FALSE
+)
 }
 \arguments{
 \item{x}{Conjunto de datos. Es un dataframe con al menos 2 variables (2 columnas).}
@@ -82,12 +84,14 @@ Una observación será atípica si:
  @seealso \code{\link{matriz.covar}}, \code{\link{matriz.correlacion}}
 }
 \examples{
-
-## Not run:
-ejemplo_regresion <- regresion.simple(turistas,
-var_depen=2,var_indepen=3,grafico=TRUE)
-## End(Not run)
-
+\dontrun{
+ejemplo_regresion <- regresion.simple(
+  turistas,
+  var_depen = 2,
+  var_indepen = 3,
+  grafico = TRUE
+)
+}
 }
 \references{
 Esteban García, J. y otros. (2005). Estadística descriptiva y nociones de probabilidad. Paraninfo. ISBN: 9788497323741

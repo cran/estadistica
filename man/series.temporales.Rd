@@ -4,15 +4,17 @@
 \alias{series.temporales}
 \title{Series temporales.}
 \usage{
-series.temporales(x,
-       variable = NULL,
-       inicio_anual = 1,
-       periodo_inicio = 1,
-       frecuencia = 4,
-       orden = frecuencia,
-       prediccion_tendencia = FALSE,
-       grafico = FALSE,
-       exportar = FALSE)
+series.temporales(
+  x,
+  variable = NULL,
+  inicio_anual = 1,
+  periodo_inicio = 1,
+  frecuencia = 4,
+  orden = frecuencia,
+  prediccion_tendencia = FALSE,
+  grafico = FALSE,
+  exportar = FALSE
+)
 }
 \arguments{
 \item{x}{Conjunto de datos. Puede ser un vector o un dataframe.}
@@ -54,12 +56,14 @@ Lee el código QR para video-tutorial sobre el uso de la función con un ejemplo
 \if{latex}{\figure{qrseriestemporales.png}{options: width=3cm}}
 }
 \examples{
-
-ejemplo_serie <- series.temporales(turistas2,
-variable=2,
-inicio_anual=2000,
-periodo_inicio = 1)
-
+\dontrun{
+ejemplo_serie <- series.temporales(
+  turistas2,
+  variable = 2,
+  inicio_anual = 2000,
+  periodo_inicio = 1
+)
+}
 }
 \references{
 Esteban García, J. y otros. (2005). Estadística descriptiva y nociones de probabilidad. Paraninfo. ISBN: 9788497323741

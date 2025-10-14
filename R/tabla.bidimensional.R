@@ -7,13 +7,6 @@
 #' \if{html}{\figure{qrtablabidimensional.png}{options: width="25\%" alt="Figure: qricvarianza.png"}}
 #' \if{latex}{\figure{qrtablabidimensional.png}{options: width=3cm}}
 #'
-#' @usage tabla.bidimensional(x,
-#' var_filas = NULL,
-#' var_columnas = NULL,
-#' distribucion = c("cruzada","condicionada"),
-#' frecuencias = c("absolutas","relativas"),
-#' exportar = FALSE)
-#'
 #' @param x Conjunto de datos. Tiene que ser un dataframe (al menos dos variables, es decir, dos columnas).
 #' @param var_filas Variable fila.Por defecto su valor es NUll y el usuario debe escribir el nombre o posición de la variable cuyos valores quiere representar por filas.
 #' @param var_columnas Variable columna. Por defecto su valor es NUll y el usuario debe escribir el nombre o posición de la variable cuyos valores quiere representar por columnas
@@ -138,7 +131,7 @@ tabla.bidimensional <- function(x,
       if(tipo == 1){
         tabla_aux <- x %>%
           select(tipo) %>%
-          group_by(filas) %>%
+          group_by_at(vars(varnames[tipo]))  %>%
           count() %>%
           ungroup() %>%
           select(n)
@@ -148,7 +141,7 @@ tabla.bidimensional <- function(x,
       } else{
         tabla_aux <- x %>%
           select(tipo) %>%
-          group_by(columnas) %>%
+          group_by_at(vars(varnames[tipo])) %>%
           count() %>%
           ungroup() %>%
           select(n)
@@ -192,11 +185,28 @@ tabla.bidimensional <- function(x,
   tabla <- as.data.frame.matrix(tabla)
 
 
+  # Exportar
   if (exportar) {
-    filename <- paste("Tabla cruzada de ", variable[1]," y ", variable[2], " (", Sys.time(), ").xlsx", sep = "")
-    filename <- gsub(" ", "_", filename)
-    filename <- gsub(":", ".", filename)
-    rio::export(tabla, rowNames = TRUE, file = filename)
+
+    filename <- paste0("Tabla_cruzada_de_", variable[1],"_y_", variable[2],"_", format(Sys.time(), "%Y-%m-%d_%H.%M.%S"), ".xlsx")
+
+    wb <- openxlsx::createWorkbook()
+    openxlsx::addWorksheet(wb, "Tabla_bidimensional")
+
+    # nombres de fila a columna
+    resumen_export <- cbind('Var1/Var2' = row.names(tabla), tabla)
+    row.names(resumen_export) <- NULL
+
+    openxlsx::writeData(wb, "Tabla_bidimensional", resumen_export)
+
+    # formato numerico decimal en Excel
+    addStyle(wb, "Tabla_bidimensional",
+             style = createStyle(numFmt = "0.0000"),
+             rows = 2:(nrow(resumen_export)+1),
+             cols = 2:(ncol(resumen_export)+1),
+             gridExpand = TRUE)
+
+    saveWorkbook(wb, filename, overwrite = TRUE)
   }
 
   return(tabla)

@@ -7,11 +7,6 @@
 #' \if{html}{\figure{qrcovarianza.png}{options: width="25\%" alt="Figure: qricvarianza.png"}}
 #' \if{latex}{\figure{qrcovarianza.png}{options: width=3cm}}
 #'
-#' @usage matriz.covar(x,
-#'               variable = NULL,
-#'               tipo = c("muestral","cuasi"),
-#'               exportar = FALSE)
-#'
 #' @param x Conjunto de datos. Es un dataframe con al menos 2 variables (2 columnas).
 #' @param variable Es un vector (numérico o carácter) que indica las variables a seleccionar de \code{x}. Si \code{x} solo tiene 2 variables (columnas), \code{variable = NULL}. En caso contrario, es necesario indicar el nombre o posición (número de columna) de las variables a seleccionar.
 #' @param tipo Es un carácter. Por defecto de calcula la matriz de varianzas y covarianzas muestrales (\code{tipo = "muestral"}). Si \code{tipo = "cuasi"}, se calcula la matriz de cuasi-varianzas y cuasi-covarianzas muestrales.
@@ -66,84 +61,67 @@
 #' @import dplyr
 #'
 #' @export
-matriz.covar <- function(x, variable = NULL,
+matriz.covar <- function(x,
+                         variable = NULL,
                          tipo = c("muestral","cuasi"),
-                         exportar = FALSE){
-
+                         exportar = FALSE) {
 
   tipo <- tolower(tipo)
   tipo <- match.arg(tipo)
 
-  varnames <- as.character(names(x))
-  x <- data.frame(x)
-  names(x) <- varnames
+  # --- Convertir a data.frame ---
+  if (!is.data.frame(x)) x <- data.frame(x)
+  varnames <- names(x)
 
-  if(is.null(variable)){
-
-    varcuan <-  names(x[unlist(lapply(x, is.numeric))])
-    seleccion = match(varcuan,varnames)
-    x <- x[seleccion]
+  # --- Seleccion de variables ---
+  if (is.null(variable)) {
+    varcuan <- names(x)[sapply(x, is.numeric)]
+    x <- x[, varcuan, drop = FALSE]
     varnames <- varcuan
-
-  } else{
-
-    if(is.numeric(variable)){
-
-      if(all(variable <= length(x))){
-
-        variable <- variable
-
-      } else{
-
-        stop("Selecci\u00f3n err\u00f3nea de variables")
-
-      }
-    }
-
-    if(is.character(variable)){
-
-      if(all(variable %in% varnames)){
-        variable = match(variable,varnames)
-      } else {
-        stop("El nombre de la variable no es v\u00e1lido")
-      }
-    }
-
-    x <- x[,variable] %>% as.data.frame()
+  } else if (is.numeric(variable)) {
+    if (any(variable > ncol(x))) stop("Selecci\u00f3n err\u00f3nea de variables")
+    x <- x[, variable, drop = FALSE]
     varnames <- names(x)
+  } else if (is.character(variable)) {
+    if (!all(variable %in% names(x))) stop("El nombre de la variable no es v\u00e1lido")
+    x <- x[, variable, drop = FALSE]
+    varnames <- names(x)
+  } else stop("El argumento 'variable' debe ser num\u00e9rico o car\u00e1cter")
 
+  # --- Comprobacion de tipo de variables ---
+  if (!all(sapply(x, is.numeric))) {
+    stop("No puede calcularse la matriz de varianzas-covarianzas: alguna variable no es cuantitativa")
   }
 
-  clase <- sapply(x, class)
-
-  if (!all(clase %in% c("numeric","integer"))) {
-    stop("No puede calcularse la matriz de varianzas-covarianzas, alguna variable que has seleccionado no es cuantitativa")
-  }
-
-  if(tipo == "muestral"){
-
-    n <- nrow(x)
-    factor = (n-1)/n
-
-  } else{
-
-    factor <- 1
-  }
-
-  matriz_covar <- factor * var(x, na.rm = TRUE) %>%
-    as.matrix()
+  # --- Preparar matriz vacia ---
+  k <- ncol(x)
+  matriz_covar <- matrix(NA, nrow = k, ncol = k)
   colnames(matriz_covar) <- varnames
-  row.names(matriz_covar) <- varnames
+  rownames(matriz_covar) <- varnames
 
+  # --- Rellenar matriz ---
+  for (i in seq_len(k)) {
+    for (j in seq_len(k)) {
+      if (i == j) {
+        matriz_covar[i, j] <- as.numeric(varianza(x[, i, drop = FALSE], variable = 1, tipo = tipo))
+      } else {
+        matriz_covar[i, j] <- as.numeric(covarianza(x[, c(i, j)], variable = 1:2, tipo = tipo))
+      }
+    }
+  }
+
+  # --- Asegurar simetria numerica ---
+  matriz_covar[lower.tri(matriz_covar)] <- t(matriz_covar)[lower.tri(matriz_covar)]
+
+  # --- Redondear valores ---
+  matriz_covar <- round(matriz_covar, 4)
+
+  # --- Exportar si se requiere ---
   if (exportar) {
-    filename <- paste("Matriz de covarianzas"," (", Sys.time(), ").xlsx", sep = "")
-    filename <- gsub(" ", "_", filename)
-    filename <- gsub(":", ".", filename)
+    filename <- paste0("Matriz_de_covarianzas_", format(Sys.time(), "%Y-%m-%d_%H-%M-%S"), ".xlsx")
     rio::export(matriz_covar, rowNames = TRUE, file = filename)
   }
 
+  class(matriz_covar) <- c("resumen", class(matriz_covar))
   return(matriz_covar)
-
 }
-
-

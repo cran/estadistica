@@ -8,16 +8,6 @@
 #' \if{html}{\figure{qrseriestemporales.png}{options: width="25\%" alt="Figure: qrmuestra1.png"}}
 #' \if{latex}{\figure{qrseriestemporales.png}{options: width=3cm}}
 #'
-#' @usage series.temporales(x,
-#'        variable = NULL,
-#'        inicio_anual = 1,
-#'        periodo_inicio = 1,
-#'        frecuencia = 4,
-#'        orden = frecuencia,
-#'        prediccion_tendencia = FALSE,
-#'        grafico = FALSE,
-#'        exportar = FALSE)
-#'
 #' @param x Conjunto de datos. Puede ser un vector o un dataframe.
 #' @param variable Es un vector (numérico o carácter) que indica las variables a seleccionar de \code{x}. Si \code{x} se refiere una sola variable, el argumento variable es NULL. En caso contrario, es necesario indicar el nombre o posición (número de columna) de la variable.
 #' @param inicio_anual Año de inicio de la serie. Por defecto \code{inicio_anual = 1}.
@@ -56,13 +46,15 @@
 #'
 #' Murgui, J.S. y otros. (2002). Ejercicios de estadística Economía y Ciencias sociales. tirant lo blanch. ISBN: 9788484424673
 #'
-#'@examples
-#'
-#' ejemplo_serie <- series.temporales(turistas2,
-#' variable=2,
-#' inicio_anual=2000,
-#' periodo_inicio = 1)
-#'
+#' @examples
+#' \dontrun{
+#' ejemplo_serie <- series.temporales(
+#'   turistas2,
+#'   variable = 2,
+#'   inicio_anual = 2000,
+#'   periodo_inicio = 1
+#' )
+#' }
 #' @import dplyr tidyr
 #' @importFrom stats lm
 #'
@@ -295,46 +287,84 @@ if(prediccion_tendencia){
 }
 
 
+# if (exportar) {
+#   filename <- paste("Resultado series temporales (",Sys.time(), ").xlsx", sep = "")
+#   filename <- gsub(" ", "_", filename)
+#   filename <- gsub(":", ".", filename)
+#
+#   if(frecuencia!=1){
+#
+#     if(prediccion_tendencia){
+#       lista <- list(mediasMoviles,ivecorregido,serie_regresion,resultados_regresion,pronosticos)
+#
+#       rio::export(lista, rowNames = TRUE, filename, sheetName=c("Medias moviles",
+#                                                               "IVE",
+#                                                               "Datos ajuste tendencia",
+#                                                               "Modelo ajuste",
+#                                                               "Pronosticos"))
+#     }else{
+#       lista <- list(mediasMoviles,ivecorregido,serie_regresion,resultados_regresion)
+#
+#       rio::export(lista, rowNames = TRUE, filename, sheetName=c("Medias moviles",
+#                                                               "IVE",
+#                                                               "Datos ajuste tendencia",
+#                                                               "Modelo ajuste"))
+#     }
+#   }else{
+#     if(prediccion_tendencia){
+#       lista <- list(mediasMoviles,serie_regresion,resultados_regresion,pronosticos)
+#
+#       rio::export(lista, rowNames = TRUE, filename, sheetName=c("Medias moviles",
+#                                                               "Datos ajuste tendencia",
+#                                                               "Modelo ajuste",
+#                                                               "Pronosticos"))
+#     }else{
+#       lista <- list(mediasMoviles,serie_regresion,resultados_regresion)
+#
+#       rio::export(lista, rowNames = TRUE, filename, sheetName=c("Medias moviles",
+#                                                               "Datos ajueste tendencia",
+#                                                               "Modelo ajuste"))
+#     }
+#   }
+#
+# }
+
 if (exportar) {
-  filename <- paste("Resultado series temporales (",Sys.time(), ").xlsx", sep = "")
-  filename <- gsub(" ", "_", filename)
-  filename <- gsub(":", ".", filename)
+  # Prepara el nombre del archivo (formato más limpio)
+  filename <- paste("Resultado_series_temporales_", format(Sys.time(), "%Y-%m-%d_%H.%M.%S"), ".xlsx", sep = "")
 
-  if(frecuencia!=1){
+  # Crear el workbook
+  wb <- openxlsx::createWorkbook()
 
-    if(prediccion_tendencia){
-      lista <- list(mediasMoviles,ivecorregido,serie_regresion,resultados_regresion,pronosticos)
-
-      rio::export(lista, rowNames = TRUE, filename, sheetName=c("Medias moviles",
-                                                              "IVE",
-                                                              "Datos ajuste tendencia",
-                                                              "Modelo ajuste",
-                                                              "Pronosticos"))
-    }else{
-      lista <- list(mediasMoviles,ivecorregido,serie_regresion,resultados_regresion)
-
-      rio::export(lista, rowNames = TRUE, filename, sheetName=c("Medias moviles",
-                                                              "IVE",
-                                                              "Datos ajuste tendencia",
-                                                              "Modelo ajuste"))
+  # exportacion segun parametros
+  if (frecuencia != 1) {
+    if (prediccion_tendencia) {
+      .add_sheet_with_style(wb, "Medias_moviles", mediasMoviles)
+      .add_sheet_with_style(wb, "IVE", ivecorregido)
+      .add_sheet_with_style(wb, "Datos_ajuste_tendencia", serie_regresion)
+      .add_sheet_with_style(wb, "Modelo_ajuste", resultados_regresion)
+      .add_sheet_with_style(wb, "Pronosticos", pronosticos)
+    } else {
+      .add_sheet_with_style(wb, "Medias_moviles", mediasMoviles)
+      .add_sheet_with_style(wb, "IVE", ivecorregido)
+      .add_sheet_with_style(wb, "Datos_ajuste_tendencia", serie_regresion)
+      .add_sheet_with_style(wb, "Modelo_ajuste", resultados_regresion)
     }
-  }else{
-    if(prediccion_tendencia){
-      lista <- list(mediasMoviles,serie_regresion,resultados_regresion,pronosticos)
-
-      rio::export(lista, rowNames = TRUE, filename, sheetName=c("Medias moviles",
-                                                              "Datos ajuste tendencia",
-                                                              "Modelo ajuste",
-                                                              "Pronosticos"))
-    }else{
-      lista <- list(mediasMoviles,serie_regresion,resultados_regresion)
-
-      rio::export(lista, rowNames = TRUE, filename, sheetName=c("Medias moviles",
-                                                              "Datos ajueste tendencia",
-                                                              "Modelo ajuste"))
+  } else {
+    if (prediccion_tendencia) {
+      .add_sheet_with_style(wb, "Medias_moviles", mediasMoviles)
+      .add_sheet_with_style(wb, "Datos_ajuste_tendencia", serie_regresion)
+      .add_sheet_with_style(wb, "Modelo_ajuste", resultados_regresion)
+      .add_sheet_with_style(wb, "Pronosticos", pronosticos)
+    } else {
+      .add_sheet_with_style(wb, "Medias_moviles", mediasMoviles)
+      .add_sheet_with_style(wb, "Datos_ajuste_tendencia", serie_regresion)
+      .add_sheet_with_style(wb, "Modelo_ajuste", resultados_regresion)
     }
   }
 
+  # Guardar el archivo
+  openxlsx::saveWorkbook(wb, filename, overwrite = TRUE)
 }
 
 return(list('Medias_moviles' = mediasMoviles,

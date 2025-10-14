@@ -7,12 +7,6 @@
 #' \if{html}{\figure{qrcuantiles.png}{options: width="25\%" alt="Figure: qricvarianza.png"}}
 #' \if{latex}{\figure{qrcuantiles.png}{options: width=3cm}}
 #'
-#' @usage cuantiles(x,
-#'                  variable = NULL,
-#'                  pesos = NULL,
-#'                  cortes = c(0.25,0.5,0.75),
-#'                  exportar = FALSE)
-#'
 #' @param x Conjunto de datos. Puede ser un vector o un dataframe.
 #' @param variable Es un vector (numérico o carácter) que indica las variables a seleccionar de \code{x}. Si \code{x} se refiere una sola variable, \code{variable = NULL}. En caso contrario, es necesario indicar el nombre o posición (número de columna) de la variable.
 #' @param pesos Si los datos de la variable están resumidos en una distribución de frecuencias, debe indicarse la columna que representa los valores de la variable y la columna con las frecuencias o pesos.
@@ -61,122 +55,113 @@
 #' cuantiles2 <- cuantiles(startup,variable=1,cortes=seq(0.1,0.9,0.1))
 #' cuantiles3 <- cuantiles(salarios2018,variable=6,pesos=7 )
 #'
+#' @importFrom stats quantile
+#'
 #' @export
 cuantiles <- function(x, variable = NULL, pesos = NULL,
-                      cortes = c(0.25,0.5,0.75),
-                      exportar = FALSE){
+                      cortes = c(0.25, 0.5, 0.75),
+                      exportar = FALSE) {
 
-  if(is.numeric(x)){
-    varnames <- "variable.x"
-  }else{
-    varnames <- as.character(names(x))
+  # Asegurar data.frame
+  if (!is.data.frame(x)) x <- as.data.frame(x)
+  original_names <- names(x)
+
+  # --- Seleccion de variables ---
+  if (is.null(variable)) {
+    varnames <- names(x)[sapply(x, is.numeric)]
+  } else if (is.numeric(variable)) {
+    if (any(variable > ncol(x))) stop("Selecci\u00f3n err\u00f3nea de variables")
+    varnames <- names(x)[variable]
+  } else if (is.character(variable)) {
+    if (!all(variable %in% names(x))) stop("El nombre de la variable no es v\u00e1lido")
+    varnames <- variable
+  } else {
+    stop("El argumento 'variable' debe ser num\u00e9rico o de tipo car\u00e1cter")
   }
 
-  x <- data.frame(x)
-  names(x) <- varnames
-  if(is.null(variable)){
+  x_sel <- x[, varnames, drop = FALSE]
 
-    varcuan <-  names(x[unlist(lapply(x, is.numeric))])
-    seleccion = match(varcuan,varnames)
-    x <- x[seleccion]
-    varnames <- varcuan
+  # --- Manejo de pesos ---
+  if (!is.null(pesos)) {
+    if (length(varnames) > 1 || length(pesos) > 1)
+      stop("Para calcular cuantiles ponderados solo puedes seleccionar una variable y un peso")
 
-  } else{
-
-    if(is.numeric(variable)){
-
-      if(all(variable <= length(x))){
-
-        variable <- variable
-
-
-      } else{
-
-        stop("Seleccion erronea de variables")
-
-      }
+    if (is.character(pesos)) {
+      if (!pesos %in% names(x)) stop("El nombre de los pesos no es v\u00e1lido")
+      pesos_name <- pesos
+    } else if (is.numeric(pesos)) {
+      if (any(pesos > ncol(x))) stop("Selecci\u00f3n err\u00f3nea de pesos")
+      pesos_name <- names(x)[pesos]
+    } else {
+      stop("El argumento 'pesos' debe ser num\u00e9rico o de tipo car\u00e1cter")
     }
 
-    if(is.character(variable)){
+    if (pesos_name == varnames)
+      stop("No puedes usar la misma variable como dato y como peso")
 
-      if(all(variable %in% varnames)){
-        variable = match(variable,varnames)
-      } else {
-        stop("El nombre de la variable no es valido")
-      }
-    }
-
+    x_sel <- data.frame(variable = x[[varnames]], pesos = x[[pesos_name]])
+    varnames <- varnames[1]
   }
 
-
-  if(is.null(pesos) & !is.null(variable)){
-
-    x <- x[,variable] %>% as.data.frame()
-    varnames <- varnames[variable]
-
-  }
-
-  if(!is.null(pesos) & !is.null(variable)){
-
-    if((length(variable) | length(pesos)) > 1){
-
-      stop("Para calcular los cuantiles a partir de la distribucion de frecuencias solo puedes seleccionar una variable y unos pesos")
-
-    }
-
-    if(is.numeric(pesos)){
-
-      pesos <- pesos
-
-    }
-
-    if(is.character(pesos)){
-
-      if(pesos %in% varnames){
-        pesos = match(pesos,varnames)
-      } else {
-        stop("El nombre de los pesos no es valido")
-      }
-    }
-
-
-    x <- x[,c(variable,pesos)] %>% as.data.frame()
-    varnames <- varnames[variable]
-
-  }
-
-  clase <- sapply(x, class)
-
-  if (!all(clase %in% c("numeric","integer"))) {
-    stop("No puede calcularse la media, alguna variable que has seleccionado no es cuantitativa")
+  # --- Comprobar tipo de variables ---
+  if (!all(sapply(x_sel, is.numeric))) {
+    stop("No puede calcularse la media, alguna variable seleccionada no es cuantitativa")
   }
 
   cortes <- sort(cortes)
 
-  if(is.null(pesos)){
+  # --- Funcion interna para cuantiles ---
+  calcular_cuantiles <- function(col, pesos = NULL, cortes) {
+    if (all(is.na(col))) {
+      return(rep(NA_real_, length(cortes)))
+    }
 
-    cuantiles <- apply(x,2,cuantiles.int,cortes=cortes)
-
-
-
-  } else{
-
-    x <- x
-    cuantiles <- cuantiles.int(x[1],x[2],cortes)
-
+    if (is.null(pesos)) {
+      quant <- stats::quantile(col, probs = cortes, na.rm = TRUE, names = FALSE)
+    } else {
+      # Cuantiles ponderados
+      datos <- data.frame(val = col, w = pesos)
+      datos <- datos[!is.na(datos$val) & !is.na(datos$w), ]
+      if (nrow(datos) == 0) return(rep(NA_real_, length(cortes)))
+      datos <- datos[order(datos$val), ]
+      cum_w <- cumsum(datos$w) / sum(datos$w)
+      quant <- sapply(cortes, function(p) {
+        idx <- which(cum_w >= p)[1]
+        datos$val[idx]
+      })
+    }
+    return(quant)
   }
 
-  cuantiles <- as.data.frame(cuantiles)
-  names(cuantiles) <- paste("cuantiles_",varnames,sep="")
-  row.names(cuantiles) <- paste(cortes*100,"%",sep="")
+  # --- Calcular cuantiles ---
+  if (is.null(pesos)) {
+    cuantiles_mat <- sapply(x_sel, calcular_cuantiles, cortes = cortes)
+  } else {
+    cuantiles_mat <- sapply(x_sel[,1, drop=FALSE], function(col) calcular_cuantiles(col, pesos = x_sel$pesos, cortes = cortes))
+  }
 
+  cuantiles_df <- as.data.frame(cuantiles_mat)
+  rownames(cuantiles_df) <- paste0(cortes*100, "%")
+  names(cuantiles_df) <- varnames
+
+  # --- Exportar si se solicita ---
   if (exportar) {
-    filename <- paste("Cuantiles"," (", Sys.time(), ").xlsx", sep = "")
-    filename <- gsub(" ", "_", filename)
-    filename <- gsub(":", ".", filename)
-    rio::export(cuantiles, rowNames = TRUE, file = filename)
+    filename <- paste0("Cuantiles_", format(Sys.time(), "%Y-%m-%d_%H.%M.%S"), ".xlsx")
+    wb <- openxlsx::createWorkbook()
+    openxlsx::addWorksheet(wb, "Cuantiles")
+    resumen_export <- cbind(Cuantil = rownames(cuantiles_df), cuantiles_df)
+    rownames(resumen_export) <- NULL
+    openxlsx::writeData(wb, "Cuantiles", resumen_export)
+    openxlsx::addStyle(wb, "Cuantiles",
+                       style = openxlsx::createStyle(numFmt = "0.0000"),
+                       rows = 2:(nrow(resumen_export)+1),
+                       cols = 2:(ncol(resumen_export)+1),
+                       gridExpand = TRUE)
+    openxlsx::saveWorkbook(wb, filename, overwrite = TRUE)
   }
 
-  return(cuantiles)
+  class(cuantiles_df) <- c("resumen", class(cuantiles_df))
 
+  return(cuantiles_df)
 }
+

@@ -7,10 +7,6 @@
 #' \if{html}{\figure{qrdispersion.png}{options: width="25\%" alt="Figure: qricvarianza.png"}}
 #' \if{latex}{\figure{qrdispersion.png}{options: width=3cm}}
 #'
-#' @usage desviacion(x,
-#'          variable = NULL,
-#'          pesos = NULL,
-#'          tipo = c("muestral","cuasi"))
 #'
 #' @param x Conjunto de datos. Puede ser un vector o un dataframe.
 #' @param variable Es un vector (numérico o carácter) que indica las variables a seleccionar de \code{x}. Si \code{x} se refiere una sola variable, el argumento variable es NULL. En caso contrario, es necesario indicar el nombre o posición (número de columna) de la variable.
@@ -71,147 +67,85 @@
 #' @importFrom stats sd na.omit
 #'
 #' @export
-desviacion <- function(x, variable = NULL, pesos = NULL, tipo = c("muestral","cuasi")){
+desviacion <- function(x, variable = NULL, pesos = NULL, tipo = c("muestral", "cuasi")) {
 
-  tipo <- tolower(tipo)
-  tipo <- match.arg(tipo)
+  tipo <- match.arg(tolower(tipo), c("muestral", "cuasi"))
 
-  if(is.numeric(x)){
-    varnames <- "variable.x"
-  }else{
-    varnames <- as.character(names(x))
+  # --- Asegurar data.frame ---
+  if (!is.data.frame(x)) x <- data.frame(x)
+
+  # --- Seleccion de variables ---
+  if (is.null(variable)) {
+    varnames <- names(x)[sapply(x, is.numeric)]
+  } else if (is.numeric(variable)) {
+    if (any(variable > ncol(x))) stop("Selecci\u00f3n err\u00f3nea de variables")
+    varnames <- names(x)[variable]
+  } else if (is.character(variable)) {
+    if (!all(variable %in% names(x))) stop("Nombre de variable no v\u00e1lido")
+    varnames <- variable
+  } else {
+    stop("El argumento 'variable' debe ser num\u00e9rico o de tipo car\u00e1cter")
   }
 
-  x <- data.frame(x)
-  names(x) <- varnames
+  x_sel <- x[, varnames, drop = FALSE]
 
+  # --- Comprobar tipo de variables ---
+  if (!all(sapply(x_sel, is.numeric))) {
+    stop("No puede calcularse la desviaci\u00f3n: alguna variable no es cuantitativa")
+  }
 
-  if(is.null(variable)){
-
-    varcuan <-  names(x[unlist(lapply(x, is.numeric))])
-    seleccion = match(varcuan,varnames)
-    x <- x[seleccion]
-    varnames <- varcuan
-
-  } else{
-
-    if(is.numeric(variable)){
-
-      if(all(variable <= length(x))){
-
-        variable <- variable
-
-
-      } else{
-
-        stop("Selecci\u00f3n err\u00f3nea de variables")
-
-      }
+  # --- Si no hay pesos, calculamos desviacion simple ---
+  if (is.null(pesos)) {
+    calcular_desv <- function(col) {
+      n_eff <- sum(!is.na(col))
+      if (n_eff < 2) return(NA_real_)
+      factor <- if (tipo == "muestral") sqrt((n_eff - 1) / n_eff) else 1
+      round(sqrt(stats::var(col, na.rm = TRUE)) * factor, 4)
     }
 
-    if(is.character(variable)){
+    desv_val <- sapply(x_sel, calcular_desv)
+    names(desv_val) <- names(x_sel)
 
-      if(all(variable %in% varnames)){
-        variable = match(variable,varnames)
-      } else {
-        stop("El nombre de la variable no es v\u00e1lido")
-      }
-    }
+    desv_df <- as.data.frame(t(desv_val))
 
+    return(desv_df)
   }
 
-
-  if(is.null(pesos) & !is.null(variable)){
-
-    x <- x[,variable] %>% as.data.frame()
-    varnames <- varnames[variable]
-
+  # --- Si hay pesos ---
+  if (length(pesos) != 1 || length(varnames) != 1) {
+    stop("Para desviaci\u00f3n ponderada solo puedes seleccionar una variable y un vector de pesos")
   }
 
-  if(!is.null(pesos) & !is.null(variable)){
-
-    if((length(variable) | length(pesos)) > 1){
-
-      stop("Para calcular la desviaci\u00f3n t\u00edpica a partir de la distribuci\u00f3n de frecuencias solo puedes seleccionar una variable y unos pesos")
-
-    }
-
-    if(is.numeric(pesos)){
-
-      pesos <- pesos
-
-    }
-
-
-    if(is.character(pesos)){
-
-      if(pesos %in% varnames){
-        pesos = match(pesos,varnames)
-      } else {
-        stop("El nombre de los pesos no es v\u00e1lido")
-      }
-    }
-
-
-    x <- x[,c(variable,pesos)] %>% as.data.frame()
-    varnames <- varnames[c(variable,pesos)]
-
+  # Determinar la columna de pesos
+  if (is.character(pesos)) {
+    if (!pesos %in% names(x)) stop("Nombre de pesos no v\u00e1lido")
+    pesos_col <- x[[pesos]]
+  } else if (is.numeric(pesos)) {
+    if (pesos > ncol(x)) stop("Indice de pesos inv\u00e1lido")
+    pesos_col <- x[[pesos]]
+  } else {
+    stop("El argumento 'pesos' debe ser num\u00e9rico o de tipo car\u00e1cter")
   }
 
-  clase <- sapply(x, class)
+  datos <- na.omit(data.frame(variable = x_sel[[1]], pesos = pesos_col))
+  media_pond <- sum(datos$variable * datos$pesos) / sum(datos$pesos)
+  sum_cuad <- sum((datos$variable - media_pond)^2 * datos$pesos)
 
-  if (!all(clase %in% c("numeric","integer"))) {
-    stop("No puede calcularse la desviaci\u00f3n t\u00edpica, alguna variable que has seleccionado no es cuantitativa")
+  desv_val <- if (tipo == "muestral") {
+    sqrt(sum_cuad / sum(datos$pesos))
+  } else {
+    sqrt(sum_cuad / (sum(datos$pesos) - 1))
   }
 
-
-  if(is.null(pesos) & tipo == "muestral"){
-
-    n <- nrow(x)
-    factor = (n-1)/n
-
-  } else{
-
-    factor <- 1
-  }
-
-  if(is.null(pesos)){
-
-    desviacion <- apply(x,2,sd,na.rm=TRUE)
-    desviacion <- sqrt(factor) * desviacion
-    desviacion <- as.data.frame(t(desviacion))
+  # --- Convertir a data.frame con una fila ---
+  desv_df <- as.data.frame(t(desv_val))
+  names(desv_df) <- varnames
 
 
-  } else{
+  # desv_val <- round(desv_val, 4)
+  # names(desv_val) <- paste0("desviacion_", varnames[1])
 
-    desviacion <- x %>%
-      na.omit %>%
-      rename(variable2 = varnames[1], pesos = varnames[2]) %>%
-      mutate(media = as.numeric(media(x,variable=1,pesos=2)),
-             sumatorio = (variable2-media)^2*pesos)
+  class(desv_df) <- c("resumen", class(desv_df))
 
-    varnames <- varnames[1]
-
-    if(tipo == "muestral"){
-
-      desviacion <- desviacion %>%
-        summarize(desviacion = sqrt(sum(sumatorio)/sum(pesos)))
-
-    } else{
-
-      desviacion <- desviacion %>%
-        summarize(desviacion = sqrt(sum(sumatorio)/(sum(pesos)-1)))
-
-    }
-
-    names(desviacion) <- paste("desviacion_",varnames[1],sep="")
-
-
-  }
-
-  desviacion <- as.numeric(desviacion) %>% round(4)
-  names(desviacion) <- paste("desviacion_",varnames,sep="")
-
-  return(desviacion)
-
+  return(desv_df)
 }

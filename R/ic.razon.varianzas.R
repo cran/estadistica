@@ -7,13 +7,6 @@
 #' \if{html}{\figure{qricrazonvarianzas.png}{options: width="25\%" alt="Figure: qricrazonvarianzas.png"}}
 #' \if{latex}{\figure{qricrazonvarianzas.png}{options: width=3cm}}
 #'
-#' @usage ic.razon.varianzas(x,
-#'                 variable = NULL,
-#'                 introducir = FALSE,
-#'                 media_pob = c("desconocida","conocida"),
-#'                 confianza = 0.95,
-#'                 grafico = FALSE)
-#'
 #' @param x Conjunto de datos. Puede ser un vector o un dataframe.
 #' @param variable Es un vector (numérico o carácter) que indica las variables a seleccionar de \code{x}. Si \code{x} se refiere a dos variables, \code{variable = NULL}. En caso contrario, es necesario indicar el nombre o posición (número de columna) de las variables.
 #' @param introducir Valor lógico. Si \code{introducir = FALSE} (por defecto), el usuario debe indicar el conjunto de datos que desea analizar usando los argumentos \code{x} y/o \code{variable}. Si \code{introducir = TRUE}, se le solicitará al ususario que introduzca la información relevante sobre tamaño muestral, valor de la media muestral, etc.
@@ -85,7 +78,7 @@
 #' Newbold, P, Carlson, W. y Thorne, B. (2019). Statistics for Business and Economics, Global Edition. Pearson. ISBN: 9781292315034
 #'
 #' @importFrom stats pf qf df na.omit
-#' @import dplyr ggplot2 grid
+#' @import dplyr ggplot2 cowplot
 #'
 #' @export
 ic.razon.varianzas <- function(x,
@@ -287,7 +280,8 @@ if(isFALSE(introducir)) {
         labs(y="",x="Intervalo de confianza del cociente de varianzas") +
         tema_blanco
 
-      plot <- grid::grid.draw(rbind(ggplotGrob(plot1), ggplotGrob(plot2), size = "last"))
+      # plot <- grid::grid.draw(rbind(ggplotGrob(plot1), ggplotGrob(plot2), size = "last"))
+      plot <- cowplot::plot_grid(plot1, plot2, ncol = 1, align = "v", rel_heights = c(1, 1))
 
     }
 

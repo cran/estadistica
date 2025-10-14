@@ -7,11 +7,6 @@
 #' \if{html}{\figure{qrdispersion.png}{options: width="25\%" alt="Figure: qricvarianza.png"}}
 #' \if{latex}{\figure{qrdispersion.png}{options: width=3cm}}
 #'
-#' @usage varianza(x,
-#'        variable = NULL,
-#'        pesos = NULL,
-#'        tipo = c("muestral","cuasi"))
-#'
 #' @param x Conjunto de datos. Puede ser un vector o un dataframe.
 #' @param variable Es un vector (numérico o carácter) que indica las variables a seleccionar de \code{x}. Si \code{x} se refiere una sola variable, el argumento variable es NULL. En caso contrario, es necesario indicar el nombre o posición (número de columna) de la variable.
 #' @param pesos Si los datos de la variable están resumidos en una distribución de frecuencias, debe indicarse la columna que representa los valores de la variable y la columna con las frecuencias o pesos.
@@ -72,153 +67,101 @@
 #' @importFrom stats var
 #'
 #' @export
-varianza <- function(x, variable = NULL, pesos = NULL, tipo = c("muestral","cuasi")){
+varianza <- function(x, variable = NULL, pesos = NULL, tipo = c("muestral", "cuasi")) {
 
-  tipo <- tolower(tipo)
-  tipo <- match.arg(tipo)
+  tipo <- match.arg(tolower(tipo), c("muestral", "cuasi"))
 
-  if(is.numeric(x)){
-    varnames <- "variable.x"
-  }else{
-    varnames <- as.character(names(x))
+  if (!is.data.frame(x)) x <- data.frame(x)
+
+  # --- Seleccion de variables ---
+  if (is.null(variable)) {
+    varnames <- names(x)[sapply(x, is.numeric)]
+  } else if (is.numeric(variable)) {
+    if (any(variable > ncol(x))) stop("Selecci\u00f3n err\u00f3nea de variables")
+    varnames <- names(x)[variable]
+  } else if (is.character(variable)) {
+    if (!all(variable %in% names(x))) stop("Nombre de variable no v\u00e1lido")
+    varnames <- variable
+  } else {
+    stop("El argumento 'variable' debe ser num\u00e9rico o de tipo car\u00e1cter")
   }
 
-  x <- data.frame(x)
-  names(x) <- varnames
+  x_sel <- x[, varnames, drop = FALSE]
 
-  if(is.null(variable)){
+  # --- Comprobar tipo de variables ---
+  if (!all(sapply(x_sel, is.numeric))) {
+    stop("No puede calcularse la varianza: alguna variable seleccionada no es cuantitativa")
+  }
 
-    varcuan <-  names(x[unlist(lapply(x, is.numeric))])
-    seleccion = match(varcuan,varnames)
-    x <- x[seleccion]
-    varnames <- varcuan
+  # --- Si no hay pesos ---
+  if (is.null(pesos)) {
 
-  } else{
+    x_sel <- x[, varnames, drop = FALSE]
 
-    if(is.numeric(variable)){
-
-      if(all(variable <= length(x))){
-
-        variable <- variable
-
-
-      } else{
-
-        stop("Selecci\u00f3n err\u00f3nea de variables")
-
-      }
+    # Comprobacion tipo de variable
+    if (!all(sapply(x_sel, is.numeric))) {
+      stop("No puede calcularse la varianza: alguna variable seleccionada no es cuantitativa")
     }
 
-    if(is.character(variable)){
-
-      if(all(variable %in% varnames)){
-        variable = match(variable,varnames)
-      } else {
-        stop("El nombre de la variable no es v\u00e1lido")
-      }
+    calcular_var <- function(col) {
+      n_eff <- sum(!is.na(col))
+      if (n_eff < 2) return(NA_real_)
+      factor <- if (tipo == "muestral") (n_eff - 1) / n_eff else 1
+      stats::var(col, na.rm = TRUE) * factor
     }
 
-  }
+    var_val <- sapply(x_sel, calcular_var)
+    var_df <- as.data.frame(t(var_val))
+    names(var_df) <- varnames
 
+  } else {
+    # --- Si hay pesos ---
 
-  if(is.null(pesos) & !is.null(variable)){
-
-    x <- x[,variable] %>% as.data.frame()
-    varnames <- varnames[variable]
-
-  }
-
-  if(!is.null(pesos) & !is.null(variable)){
-
-    if((length(variable) | length(pesos)) > 1){
-
-      stop("Para calcular la varianza a partir de la distribuci\u00f3n de frecuencias solo puedes seleccionar una variable y unos pesos")
-
+    # Determinar indices o nombres
+    if (is.character(pesos)) {
+      if (!(pesos %in% names(x))) stop("El nombre de los pesos no es v\u00e1lido")
+      pesos_idx <- match(pesos, names(x))
+    } else if (is.numeric(pesos)) {
+      if (pesos > ncol(x)) stop("Selecci\u00f3n err\u00f3nea de pesos")
+      pesos_idx <- pesos
+    } else {
+      stop("El argumento 'pesos' debe ser num\u00e9rico o de tipo car\u00e1cter")
     }
 
-    if(is.numeric(pesos)){
-
-      pesos <- pesos
-
+    if (length(varnames) > 1) {
+      stop("Solo puede calcularse la varianza ponderada para una variable a la vez")
     }
 
+    variable_idx <- match(varnames, names(x))
+    x_sel <- x[, c(variable_idx, pesos_idx)]
+    names(x_sel) <- c("variable2", "pesos")
 
-    if(is.character(pesos)){
-
-      if(pesos %in% varnames){
-        pesos = match(pesos,varnames)
-      } else {
-        stop("El nombre de los pesos no es v\u00e1lido")
-      }
+    if (!is.numeric(x_sel$variable2) || !is.numeric(x_sel$pesos)) {
+      stop("Tanto la variable como los pesos deben ser num\u00e9ricos")
     }
 
+    x_sel <- na.omit(x_sel)
 
-    x <- x[,c(variable,pesos)] %>% as.data.frame()
-    varnames <- varnames[c(variable,pesos)]
+    # Calcular media ponderada
+    media_pond <- sum(x_sel$variable2 * x_sel$pesos) / sum(x_sel$pesos)
 
-  }
+    # Suma ponderada de cuadrados
+    sumatorio <- (x_sel$variable2 - media_pond)^2 * x_sel$pesos
 
-  clase <- sapply(x, class)
-
-  if (!all(clase %in% c("numeric","integer"))) {
-    stop("No puede calcularse la varianza, alguna variable que has seleccionado no es cuantitativa")
-  }
-
-  tipo_varianza <- c("muestral","cuasi")
-
-  tipo <- tolower(tipo)
-
-  if(!(tipo %in% tipo_varianza)){
-
-    stop("Indica si quieres calcular la varianza muestral o la cuasi-varianza")
-
-  }
-
-  if(is.null(pesos) & tipo == "muestral"){
-
-    n <- nrow(x)
-    factor = (n-1)/n
-
-  } else{
-
-    factor <- 1
-  }
-
-  if(is.null(pesos)){
-
-    varianza <- apply(x,2,var,na.rm=TRUE)
-    varianza <- factor * varianza
-    varianza <- as.data.frame(t(varianza))
-
-  } else{
-
-    varianza <- x %>%
-      na.omit %>%
-      rename(variable2 = varnames[1], pesos = varnames[2]) %>%
-      dplyr::mutate(media = as.numeric(media(x,variable=1,pesos=2)),
-                    sumatorio = (variable2-media)^2*pesos)
-
-    varnames <- varnames[1]
-
-    if(tipo == "muestral"){
-
-      varianza <- varianza %>%
-        summarize(varianza = sum(sumatorio)/sum(pesos))
-
-    } else{
-
-      varianza <- varianza %>%
-        summarize(varianza = sum(sumatorio)/(sum(pesos)-1))
-
-
+    # Denominador segun tipo
+    if (tipo == "muestral") {
+      denom <- sum(x_sel$pesos)
+    } else {
+      denom <- sum(x_sel$pesos) - 1
     }
 
+    var_val <- sum(sumatorio) / denom
 
+    var_df <- data.frame(varianza = var_val)
+    names(var_df) <- varnames
   }
 
-  varianza <- as.numeric(varianza) %>% round(4)
-  names(varianza) <- paste("varianza_",varnames,sep="")
-
-  return(varianza)
-
+  class(var_df) <- c("resumen", class(var_df))
+  return(var_df)
 }
+

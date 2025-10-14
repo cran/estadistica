@@ -7,8 +7,6 @@
 #' \if{html}{\figure{qrcorrelacion.png}{options: width="25\%" alt="Figure: qricvarianza.png"}}
 #' \if{latex}{\figure{qrcorrelacion.png}{options: width=3cm}}
 #'
-#' @usage matriz.correlacion(x, variable = NULL, exportar = FALSE)
-#'
 #' @param x Conjunto de datos. Es un dataframe con al menos 2 variables (2 columnas).
 #' @param variable Es un vector (numérico o carácter) que indica las variables a seleccionar de \code{x}. Si \code{x} solo tiene 2 variables (columnas), \code{variable = NULL}. En caso contrario, es necesario indicar el nombre o posición (número de columna) de las variables a seleccionar.
 #' @param exportar Para exportar los resultados a una hoja de cálculo Excel (\code{exportar = TRUE}).
@@ -109,12 +107,32 @@ matriz.correlacion <- function(x, variable = NULL, exportar = FALSE){
   colnames(matriz_cor) <- varnames
   row.names(matriz_cor) <- varnames
 
+  # Exportar
   if (exportar) {
-    filename <- paste("Matriz de correlaci\u00f3n"," (", Sys.time(), ").xlsx", sep = "")
-    filename <- gsub(" ", "_", filename)
-    filename <- gsub(":", ".", filename)
-    rio::export(matriz_cor, rowNames = TRUE, file = filename)
+
+    filename <- paste0("Matriz_de_correlacion_", format(Sys.time(), "%Y-%m-%d_%H.%M.%S"), ".xlsx")
+
+    wb <- openxlsx::createWorkbook()
+    openxlsx::addWorksheet(wb, "Matriz_correlacion")
+
+    # nombres de fila a columna
+    resumen_export <- cbind(' ' = row.names(matriz_cor), matriz_cor)
+    row.names(resumen_export) <- NULL
+
+    openxlsx::writeData(wb, "Matriz_correlacion", resumen_export)
+
+    # formato numerico decimal en Excel
+    addStyle(wb, "Matriz_correlacion",
+             style = createStyle(numFmt = "0.0000"),
+             rows = 2:(nrow(resumen_export)+1),
+             cols = 2:(ncol(resumen_export)+1),
+             gridExpand = TRUE)
+
+    saveWorkbook(wb, filename, overwrite = TRUE)
   }
+
+  class(matriz_cor) <- c("resumen", class(matriz_cor))
+
 
   return(matriz_cor)
 

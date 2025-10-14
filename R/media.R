@@ -7,8 +7,6 @@
 #' \if{html}{\figure{qrposicion.png}{options: width="25\%" alt="Figure: qricvarianza.png"}}
 #' \if{latex}{\figure{qrposicion.png}{options: width=3cm}}
 #'
-#' @usage media(x, variable = NULL, pesos = NULL)
-#'
 #' @param x Conjunto de datos. Puede ser un vector o un dataframe.
 #' @param variable Es un vector (numérico o carácter) que indica las variables a seleccionar de \code{x}. Si \code{x} se refiere una sola variable, \code{variable = NULL}. En caso contrario, es necesario indicar el nombre o posición (número de columna) de la variable.
 #' @param pesos Si los datos de la variable están resumidos en una distribución de frecuencias, debe indicarse la columna que representa los valores de la variable y la columna con las frecuencias o pesos.
@@ -63,125 +61,80 @@
 #' @import dplyr
 #'
 #' @export
-media <- function(x, variable = NULL, pesos = NULL){
+media <- function(x,
+                  variable = NULL,
+                  pesos = NULL) {
 
-  if(is.numeric(x)){
-    varnames <- "variable.x"
-  }else{
-    varnames <- as.character(names(x))
+  # Si es un vector, convertirlo a data.frame
+  if (!is.data.frame(x)) {
+    x <- data.frame(variable = x)
   }
 
-  x <- data.frame(x)
-  names(x) <- varnames
-
-
-  if(is.null(variable)){
-
-    varcuan <-  names(x[unlist(lapply(x, is.numeric))])
-    seleccion = match(varcuan,varnames)
-    x <- x[seleccion]
-    varnames <- varcuan
-
-  } else{
-
-    if(is.numeric(variable)){
-
-      if(all(variable <= length(x))){
-
-        variable <- variable
-
-      } else{
-
-        stop("Selecci\u00f3n err\u00f3nea de variables")
-
-      }
-    }
-
-    if(is.character(variable)){
-
-      if(all(variable %in% varnames)){
-        variable = match(variable,varnames)
-      } else {
-        stop("El nombre de la variable no es v\u00e1lido")
-      }
-    }
-
+  # Determinar variables seleccionadas
+  if (is.null(variable)) {
+    varnames <- names(x)[sapply(x, is.numeric)]
+  } else if (is.numeric(variable)) {
+    varnames <- names(x)[variable]
+  } else if (is.character(variable)) {
+    varnames <- variable
+  } else {
+    stop("El argumento 'variable' debe ser num\u00e9rico o de tipo car\u00e1cter")
   }
 
-
-  if(is.null(pesos) & !is.null(variable)){
-
-    x <- x[,variable] %>% as.data.frame()
-    varnames <- varnames[variable]
-
+  # Verificar que las columnas seleccionadas existen
+  if (!all(varnames %in% names(x))) {
+    stop("Alguna variable seleccionada no existe en el data.frame")
   }
 
-  if(!is.null(pesos) & !is.null(variable)){
+  # Subconjunto con las variables seleccionadas
+  x_sel <- x[, varnames, drop = FALSE]
 
-    if((length(variable) | length(pesos)) > 1){
-
-      stop("Para calcular la media a partir de la distribuci\u00fn de frecuencias solo puedes seleccionar una variable y unos pesos")
-
+  # Manejo de pesos (si existen)
+  if (!is.null(pesos)) {
+    if (length(varnames) > 1 || length(pesos) > 1) {
+      stop("Para el cl\u00e1culo ponderado solo puedes seleccionar una variable y un vector de pesos")
     }
 
-    if(is.numeric(pesos)){
-
-      pesos <- pesos
-
+    if (is.character(pesos)) {
+      pesos_name <- pesos
+    } else if (is.numeric(pesos)) {
+      pesos_name <- names(x)[pesos]
+    } else {
+      stop("El argumento 'pesos' debe ser num\u00e9rico o de tipo car\u00e1cter")
     }
 
-
-    if(is.character(pesos)){
-
-      if(pesos %in% varnames){
-        pesos = match(pesos,varnames)
-      } else {
-        stop("El nombre de los pesos no es v\u00e1lido")
-      }
+    if (!pesos_name %in% names(x)) {
+      stop("El nombre de los pesos no es v\u00e1lido")
     }
 
-    if(pesos == variable){
-
-      stop("Has seleccionado la misma columna del dataframe para la variable y los pesos")
-
+    if (pesos_name == varnames) {
+      stop("No puedes usar la misma variable como dato y como peso")
     }
 
-
-    x <- x[,c(variable,pesos)] %>% as.data.frame()
-    varnames <- varnames[c(variable,pesos)]
-
+    x_sel <- data.frame(variable = x[[varnames]], pesos = x[[pesos_name]])
   }
 
-  clase <- sapply(x, class)
-
-  if (!all(clase %in% c("numeric","integer"))) {
-    stop("No puede calcularse la media, alguna variable que has seleccionado no es cuantitativa")
+  # Comprobacion tipo de variable
+  if (!all(sapply(x_sel, is.numeric))) {
+    stop("No puede calcularse la media: alguna variable seleccionada no es cuantitativa")
   }
 
-  if(is.null(pesos)){
-
-    media <- apply(x,2,mean,na.rm=TRUE)
-    media <- as.data.frame(t(media)) %>%
-      as.numeric()
-
-  } else{
-
-    media <- x %>%
-      na.omit %>%
-      rename(variable2 = varnames[1], pesos = varnames[2]) %>%
-      dplyr::summarize(media = sum(variable2*pesos)/sum(pesos)) %>%
-      as.numeric()
-
-    varnames <- varnames[1]
-
-
+  # Calculo de la media
+  if (is.null(pesos)) {
+    result <- sapply(x_sel, mean, na.rm = TRUE)
+    names(result) <- paste0("media_", names(x_sel))
+  } else {
+    result <- sum(x_sel[[1]] * x_sel[[2]], na.rm = TRUE) / sum(x_sel[[2]], na.rm = TRUE)
+    names(result) <- paste0("media_", varnames)
   }
 
+  # --- Convertir a data.frame con una fila ---
+  media_df <- as.data.frame(t(result))
+  names(media_df) <- varnames
 
-  names(media) <- paste("media_",varnames,sep="")
+  class(media_df) <- c("resumen", class(media_df))
 
-  return(media)
+
+  return(media_df)
 
 }
-
-
