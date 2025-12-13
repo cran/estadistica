@@ -1,7 +1,7 @@
 Package: estadistica
 Type: Package
 Title: Fundamentos de estadística descriptiva e inferencial
-Version: 1.0
+Version: 1.2
 Authors@R: 
   c(person(given = "Vicente",
            family = "Coll-Serrano",
@@ -19,10 +19,10 @@ LazyData: true
 RoxygenNote: 7.3.3
 URL: https://www.uv.es/estadistic/
 Depends: R (>= 3.5.0)
-Imports: cli, dplyr, tidyr, plotly, ggplot2, rio, shiny,
+Imports: cli, dplyr, tidyr, tibble, plotly, ggplot2, rio, shiny,
         shinydashboard, knitr, forecast, openxlsx, cowplot
 NeedsCompilation: no
-Packaged: 2025-10-14 10:54:10 UTC; vicen
+Packaged: 2025-12-13 14:47:52 UTC; vicen
 Maintainer: Vicente Coll-Serrano <estadistic@uv.es>
 Repository: CRAN
-Date/Publication: 2025-10-14 13:10:08 UTC
+Date/Publication: 2025-12-13 15:00:02 UTC

@@ -150,7 +150,7 @@
 #' @description Para obtener los momentos
 #' @param x Vector
 #' @param orden Orden del momento central
-#' #' @keywords internal
+#' @keywords internal
 #' @noRd
 .momento.central <- function(x, orden){
 
@@ -224,7 +224,7 @@
     if (inherits(data, "data.frame")) {
       openxlsx::writeData(wb, sheet_name, data, rowNames = TRUE)
 
-      # Aplicar formato numérico
+      # Aplicar formato numerico
       numeric_cols <- which(sapply(data, is.numeric))
       if (length(numeric_cols) > 0) {
         openxlsx::addStyle(
@@ -256,7 +256,7 @@
 #' @noRd
 .format_consola <- function(x, decimales = 4) {
   if (is.numeric(x)) {
-    # Formato fijo sin notación científica para todo el vector
+    # Formato fijo sin notacióo científica para todo el vector
     formatted <- format(x, scientific = FALSE, digits = 12, nsmall = decimales)
 
     # Limpieza de ceros decimales (vectorizado)
@@ -295,7 +295,7 @@
       stop("El objeto no es una lista")
     }
 
-    # Mostrar título si se proporciona
+    # Mostrar titulo si se proporciona
     if (!is.null(titulo)) {
       cat("\n", toupper(titulo), "\n", sep = "")
       cat(paste(rep("=", nchar(titulo)), collapse = ""), "\n\n")
@@ -313,7 +313,7 @@
 
   }, error = function(e) {
     warning("Error al formatear lista: ", e$message)
-    print(x)  # Mostrar versión sin formatear como fallback
+    print(x)  # Mostrar version sin formatear como fallback
   })
 
   invisible(x)
@@ -330,23 +330,23 @@
   output_matrix <- m
   n <- nrow(output_matrix)
 
-  # Empezamos desde la última fila y vamos hacia arriba
+  # Empezamos desde la ultima fila y vamos hacia arriba
   i <- n
   while (i > 1) {
     # Si el valor en la fila actual es menor a n_min_obs
     if (output_matrix$Freq_esp[i] < n_min_obs) {
-      acum_freq <- output_matrix$Freq_esp[i]  # Empezamos la acumulación en Frey_obs
-      acum_suma <- output_matrix$Freq_obs[i]      # Empezamos la acumulación en Freq_obs
+      acum_freq <- output_matrix$Freq_esp[i]  # Empezamos la acumulacion en Frey_obs
+      acum_suma <- output_matrix$Freq_obs[i]      # Empezamos la acumulacion en Freq_obs
       j <- i - 1
 
-      # Seguimos hacia arriba sumando hasta que la acumulación sea >= n_min_obs
+      # Seguimos hacia arriba sumando hasta que la acumulacion sea >= n_min_obs
       while (acum_freq < n_min_obs && j > 0) {
         acum_freq <- acum_freq + output_matrix$Freq_esp[j]  # Acumulamos en Frey_obs
         acum_suma <- acum_suma + output_matrix$Freq_obs[j]      # Acumulamos en SUMA
         j <- j - 1
       }
 
-      # Actualizamos la fila donde terminó la acumulación
+      # Actualizamos la fila donde termina la acumulacion
       output_matrix$Freq_esp[j + 1] <- acum_freq
       output_matrix$Freq_obs[j + 1] <- acum_suma
 
@@ -355,7 +355,7 @@
         output_matrix <- output_matrix[-((j + 2):i), ]
       }
 
-      # Ajustamos el valor de i para continuar desde la fila donde se terminó la acumulación
+      # Ajustamos el valor de i para continuar desde la fila donde se termina la acumulacion
       i <- j + 1
     } else {
       # Si la fila actual ya es >= n_min_obs, seguimos con la fila anterior
@@ -380,10 +380,10 @@
   output_exp <- exp_matrix
   n_cols <- ncol(output_exp)
 
-  # Empezamos desde la última columna de la matriz de frecuencias esperadas
+  # Empezamos desde la ultima columna de la matriz de frecuencias esperadas
   i <- n_cols
   while (i > 1) {
-    # Verificamos si algún valor en la columna actual de la matriz de frecuencias esperadas es menor a 5
+    # Verificamos si algun valor en la columna actual de la matriz de frecuencias esperadas es menor a 5
     if (any(output_exp[, i] < n_min_exp)) {
       # Acumulamos toda la columna actual en la columna anterior
       output_exp[, i - 1] <- output_exp[, i - 1] + output_exp[, i]
@@ -396,10 +396,149 @@
       # Ajustamos la cantidad de columnas
       i <- ncol(output_exp)
     } else {
-      # Si ningún valor en la columna actual es menor a 5, pasamos a la columna anterior
+      # Si ningun valor en la columna actual es menor a 5, pasamos a la columna anterior
       i <- i - 1
     }
   }
 
   return(list(observadas = output_obs, esperadas = output_exp))
 }
+
+
+#' Función interna que combina o resume data frames estadísticos
+#' @keywords internal
+#' @noRd
+#' @import tibble
+.resumir <- function(...,
+                     nombres = NULL,
+                     exportar = FALSE,
+                     archivo = NULL) {
+
+  # Captura robusta de argumentos
+  listas <- list(...)
+  llamadas <- as.list(substitute(list(...)))[-1L]
+
+  # Nombres automaticos si no se pasan
+  if (is.null(nombres)) {
+    nombres <- names(llamadas)
+    if (is.null(nombres) || any(nombres == "")) {
+      nombres <- sapply(llamadas, deparse)
+    }
+  }
+
+  if (length(nombres) != length(listas)) {
+    stop("Error interno: no se pudieron asignar los nombres a todos los objetos.")
+  }
+
+  # Preparar dataframes y conservar rownames
+  listas <- lapply(listas, function(df) {
+    rn <- rownames(df)
+    df <- as.data.frame(unclass(df)) # limpiar clases
+    df$estadistico <- if (!is.null(rn)) rn else seq_len(nrow(df))
+    df
+  })
+
+  # Comprobamos si las columnas coinciden (excepto "estadistico")
+  nombres_col <- lapply(listas, names)
+  nombres_col <- lapply(nombres_col, function(x) setdiff(x, "estadistico"))
+  mismas_columnas <- length(unique(nombres_col)) == 1
+
+  # --- CASO 1: columnas coinciden ---
+  if (mismas_columnas) {
+    tablas_etiquetadas <- Map(function(df, nom) {
+      df$medida <- as.character(nom)
+      df
+    }, listas, nombres)
+
+    tabla_final <- dplyr::bind_rows(tablas_etiquetadas)
+    tabla_final <- dplyr::select(tabla_final, "medida", "estadistico", dplyr::everything())
+
+    # Exportar a Excel
+    if (isTRUE(exportar)) {
+      if (is.null(archivo)) {
+        archivo <- paste0("resultados_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".xlsx")
+      }
+      openxlsx::write.xlsx(tabla_final, file = archivo, rowNames = FALSE)
+      message("Resultados exportados a: ", archivo)
+    }
+
+    return(tabla_final)
+  }
+
+  # --- CASO 2: columnas distintas ---
+  estructura <- Map(function(df, nom) {
+    df_clean <- as.data.frame(unclass(df))  # limpiar clases
+
+    # Tomamos la ultima columna como 'estadistico' y la ponemos al principio
+    n_col <- ncol(df_clean)
+    df_clean <- cbind(estadsitico = df_clean[[n_col]], df_clean[, -n_col, drop = FALSE])
+
+    # Mostramos todas las filas
+    preview_df <- df_clean
+
+    list(
+      medida = nom,
+      preview = preview_df
+    )
+  }, listas, nombres)
+
+  names(estructura) <- nombres
+  class(estructura) <- "resumen_resultados"
+
+  # Metodo de impresion que muestra todas las filas
+  print.resumen_resultados <- function(x, ...) {
+    cat("Resumen de objetos estad\u00edsticos:\n\n")
+    for (i in seq_along(x)) {
+      obj <- x[[i]]
+      cat("-", obj$medida, "\n")
+      cat("  - Resultados:\n")
+      print(obj$preview, row.names = FALSE)
+      cat("\n")
+    }
+    invisible(x)
+  }
+
+  assign("print.resumen_resultados", print.resumen_resultados, envir = parent.frame())
+
+  # Exportar Excel en caso de columnas distintas
+  if (isTRUE(exportar)) {
+    if (is.null(archivo)) {
+      archivo <- paste0("resumen_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".xlsx")
+    }
+    wb <- openxlsx::createWorkbook()
+    for (i in seq_along(estructura)) {
+      sheet_name <- substr(names(estructura)[i], 1, 31)
+      openxlsx::addWorksheet(wb, sheetName = sheet_name)
+      openxlsx::writeData(wb, sheet = i, x = estructura[[i]]$preview)
+    }
+    openxlsx::saveWorkbook(wb, archivo, overwrite = TRUE)
+    message("Resumen exportado a: ", archivo)
+  }
+
+  return(estructura)
+}
+
+#' Combina o resume data frames para resumen estadístico
+#'
+#' @param ... Data frames a combinar o resumir.
+#' @param nombres Vector de nombres opcionales para los objetos.
+#' @param exportar Logical. Si TRUE, exporta a Excel.
+#' @param archivo Nombre del archivo Excel; si NULL, se genera automáticamente.
+#' @return Data frame combinado si las columnas coinciden, o lista resumen si son distintas.
+#' @examples
+#' \dontrun{
+#' Ejemplo caso 1: resumir varios data frames con las mismas columnas
+#' media <- estadistica::media(mtcars)
+#' cuantiles <- estadistica::cuantiles(mtcars)
+#'
+#' resultados <- resumir(media, cuantiles, exportar=TRUE)
+#' resultados
+#'
+#' Ejemplo caso 2: resumir varios data frames con distintas columnas
+#' forma <- estadistica::medidas.forma(mtcars[c(1, 3, 4)])
+#' resultados <- resumir(media, cuantiles, forma, exportar=TRUE)
+#' resultados
+#' }
+
+#' @export
+resumir <- .resumir
