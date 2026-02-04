@@ -1,4 +1,4 @@
-1cb0c66c686e7b01420813f898d9f014 *DESCRIPTION
+03d2e1b755e161ad7fb73894942d76ec *DESCRIPTION
 51623335b403f08d272c04c86e10d9a6 *NAMESPACE
 8b4f010cf6b8ba9d5607e724f2017e51 *R/calculo.probabilidad.R
 8cd486af77009e1350917ebc28ffa125 *R/coeficiente.variacion.R
@@ -23,7 +23,7 @@ f46e649cbf56ed9bd2a7e0a5d65f7810 *R/descriptivos.R
 58bb8dce8eca086b5a472d6d54f2708c *R/distribucion.normal.R
 ef5e2195359c6f7f8849b189edfd44ad *R/distribuciones.probabilidad.R
 7a785bb42baf32adbe2c026a5cc2d27e *R/funcion_agrupar.R
-d817db7d5c1db31ada00c6bde9e09b22 *R/globals.R
+629e2181d5492b8bc7b2ccc2a82a1802 *R/globals.R
 e9f3cb2a52742c69df252abf23cf11df *R/ic.correlacion.R
 ac32d75a112bb05688264fa75ec77696 *R/ic.diferencia.medias.R
 0a53a05f8e9e9fced1f4d3773ffdf5cf *R/ic.diferencia.proporciones.R
